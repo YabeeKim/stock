@@ -5,14 +5,12 @@ import './App.css'
 const STOCK_LIST = [
     {name: '삼성전자', symbol: '005930', quantity: 375, market: 'KR'},
     {name: '기아', symbol: '000270', quantity: 51, market: 'KR'},
-    {name: '삼성SDI', symbol: '006400', quantity: 91, market: 'KR'},
-    {name: '한화솔루션', symbol: '009830', quantity: 120, market: 'KR'},
-    {name: '씨에스윈드', symbol: '112610', quantity: 80, market: 'KR'},
+    {name: '삼성SDI', symbol: '006400', quantity: 125, market: 'KR'},
     {name: '테슬라', symbol: 'TSLA', quantity: 130, market: 'US'}
 ]
 
 // 원금
-const INITIAL_INVESTMENT = 118000000
+const INITIAL_INVESTMENT = 121_500_000
 
 function App() {
     const [stocks, setStocks] = useState([])
