@@ -4,12 +4,12 @@ import './App.css'
 // 고정된 주식 목록
 const STOCK_LIST = [
     {name: '삼성전자', symbol: '005930', quantity: 375, market: 'KR'},
-    {name: '삼성SDI', symbol: '006400', quantity: 179, market: 'KR'},
+    {name: '삼성SDI', symbol: '006400', quantity: 185, market: 'KR'},
     {name: '테슬라', symbol: 'TSLA', quantity: 130, market: 'US'}
 ]
 
 // 원금
-const INITIAL_INVESTMENT = 133_000_000
+const INITIAL_INVESTMENT = 134_500_000
 
 function App() {
     const [stocks, setStocks] = useState([])
