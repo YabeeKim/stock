@@ -9,6 +9,7 @@ body {
 .container {
   max-width: 1200px;
   margin: 0 auto;
+  padding-bottom: 80px;
 }
 
 h1 {
@@ -263,5 +264,109 @@ button:disabled {
   button {
     font-size: 12px;
     padding: 6px 12px;
+  }
+}
+
+/* 차트 컨테이너 */
+.chart-container {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* 시장별 요약 */
+.market-summary {
+  margin-top: 20px;
+}
+
+.market-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.market-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.market-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.market-value {
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+.market-percent {
+  color: #666;
+  font-size: 14px;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* 바텀 네비게이션 */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 50;
+}
+
+.bottom-nav button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  margin: 0;
+  font-size: 12px;
+  transition: color 0.2s;
+}
+
+.bottom-nav button:hover {
+  background: #f3f4f6;
+}
+
+.bottom-nav button.active {
+  color: #2563eb;
+}
+
+.bottom-nav .nav-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.bottom-nav .nav-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* 모바일에서 바텀 네비 패딩 */
+@media (max-width: 768px) {
+  .container {
+    padding-bottom: 100px;
+  }
+
+  .chart-container {
+    padding: 15px;
   }
 }
