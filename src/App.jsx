@@ -156,7 +156,12 @@ function App() {
 
     return (
         <div className="container bg-gray-100 p-5 md:p-10 min-h-screen">
-            <h1 className="text-center mb-8 text-gray-800 text-3xl md:text-4xl">📈 주식 포트폴리오</h1>
+            <div className="flex">
+                <h1 className="text-center mb-8 text-gray-800 text-3xl md:text-4xl">📈 주식 포트폴리오</h1>
+                <button className="refresh-btn" onClick={loadStockPrices} disabled={loading}>
+                    {loading ? '⏳' : '🔄'}
+                </button>
+            </div>
 
             <div className="current-time">
                 {currentTime.toLocaleString('ko-KR', {
@@ -180,13 +185,6 @@ function App() {
             {error && <div className="error text-center mb-5">{error}</div>}
 
             <div className="portfolio-section">
-                <div className="flex justify-between items-center mb-5">
-                    <h2 className="text-xl md:text-2xl">보유 종목</h2>
-                    <button className="refresh-btn" onClick={loadStockPrices} disabled={loading}>
-                        {loading ? '⏳' : '🔄'}
-                    </button>
-                </div>
-
                 {loading && stocks.length === 0 ? (
                     <div className="empty-state">
                         주가 정보를 불러오는 중...
