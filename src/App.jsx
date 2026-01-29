@@ -4,11 +4,11 @@ import './App.css'
 
 // 고정된 주식 목록
 const STOCK_LIST = [
-    {name: '삼성전자', symbol: '005930', quantity: 375, market: 'KR'},
-    {name: '삼성SDI', symbol: '006400', quantity: 185, market: 'KR'},
-    {name: '한중이엔시스', symbol: '107640', quantity: 21, market: 'KR'},
-    {name: '서진시스템', symbol: '178320', quantity: 30, market: 'KR'},
-    {name: '테슬라', symbol: 'TSLA', quantity: 130, market: 'US'}
+    {name: '삼성전자', symbol: '005930', quantity: 375, market: 'KR', type: 'KS'},
+    {name: '삼성SDI', symbol: '006400', quantity: 185, market: 'KR', type: 'KS'},
+    {name: '한중엔시에스', symbol: '107640', quantity: 21, market: 'KR',  type: 'KQ'},
+    {name: '서진시스템', symbol: '178320', quantity: 30, market: 'KR',  type: 'KQ'},
+    {name: '테슬라', symbol: 'TSLA', quantity: 130, market: 'US',  type: 'NASDAQ'},
 ]
 
 const INITIAL_INVESTMENT = 136_500_000
@@ -22,33 +22,6 @@ function App() {
     const [showPercentage, setShowPercentage] = useState(false)
     const [activeTab, setActiveTab] = useState('portfolio')
 
-    // 차트 색상
-    const CHART_COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
-
-    // 종목별 차트 데이터 (KRW 환산)
-    const getChartData = () => {
-        if (stocks.length === 0 || exchangeRate === 0) return []
-        return stocks.map(stock => ({
-            name: stock.name,
-            value: stock.currency === 'KRW'
-                ? stock.totalValue
-                : stock.totalValue * exchangeRate
-        }))
-    }
-
-    // 시장별 데이터 (분석 화면용)
-    const getMarketData = () => {
-        if (stocks.length === 0 || exchangeRate === 0) return []
-        const krTotal = stocks.filter(s => s.market === 'KR')
-            .reduce((sum, s) => sum + s.totalValue, 0)
-        const usTotal = stocks.filter(s => s.market === 'US')
-            .reduce((sum, s) => sum + (s.totalValue * exchangeRate), 0)
-        return [
-            {name: '한국 주식', value: krTotal},
-            {name: '미국 주식', value: usTotal}
-        ]
-    }
-
     // 현재 시간 업데이트
     useEffect(() => {
         const timer = setInterval(() => {
@@ -58,10 +31,10 @@ function App() {
     }, [])
 
     // 주가 조회 함수
-    const fetchStockPrice = async (symbol, market) => {
+    const fetchStockPrice = async (symbol, market, type) => {
         try {
             // 한국 주식은 .KS (코스피) 또는 .KQ (코스닥) 추가
-            const ticker = market === 'KR' ? `${symbol}.KS` : symbol
+            const ticker = market === 'KR' ? `${symbol}.${type}` : symbol
 
             const response = await fetch(`/api/stock/${ticker}`)
 
@@ -173,23 +146,6 @@ function App() {
         }
     }
 
-    // 총 평가금액 계산
-    const getTotalValue = () => {
-        const krwStocks = stocks.filter(s => s.currency === 'KRW')
-        const usdStocks = stocks.filter(s => s.currency === 'USD')
-
-        const krwTotal = krwStocks.reduce((sum, stock) => sum + stock.totalValue, 0)
-        const usdTotal = usdStocks.reduce((sum, stock) => sum + stock.totalValue, 0)
-
-        return {krwTotal, usdTotal}
-    }
-
-    const {krwTotal, usdTotal} = getTotalValue()
-
-    const chartData = getChartData()
-    const marketData = getMarketData()
-    const totalChartValue = chartData.reduce((sum, item) => sum + item.value, 0)
-
     return (
         <div className="container bg-gray-100 p-5 md:p-10 min-h-screen">
             <h1 className="text-center mb-8 text-gray-800 text-3xl md:text-4xl">📈 주식 포트폴리오</h1>
@@ -205,7 +161,7 @@ function App() {
                 })}
             </div>
 
-            {error && <div className="error text-center mb-5">{ error}</div>}
+            {error && <div className="error text-center mb-5">{error}</div>}
 
             {exchangeRate > 0 && (
                 <div className="exchange-rate">
@@ -215,184 +171,6 @@ function App() {
                 })}
                 </div>
             )}
-
-            {activeTab === 'portfolio' && (
-                <div className="portfolio-section">
-                    <div className="flex justify-between items-center mb-5">
-                        <h2 className="text-xl md:text-2xl">보유 종목</h2>
-                        <button onClick={loadStockPrices} disabled={loading}>
-                            {loading ? '갱신 중...' : '가격 갱신'}
-                        </button>
-                    </div>
-
-                    {loading && stocks.length === 0 ? (
-                        <div className="empty-state">
-                            주가 정보를 불러오는 중...
-                        </div>
-                    ) : (
-                        <>
-                            <div className="table-wrapper">
-                                <table className="portfolio-table">
-                                    <thead>
-                                    <tr>
-                                        <th>종목명</th>
-                                        <th>수량</th>
-                                        <th>현재가</th>
-                                        <th>평가금액</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {stocks.map((stock) => (
-                                        <tr key={stock.id}>
-                                            <td>{stock.name}</td>
-                                            <td>{stock.quantity.toLocaleString()}</td>
-                                            <td
-                                                onClick={() => setShowPercentage(!showPercentage)}
-                                                className="cursor-pointer"
-                                            >
-                                                {stock.error ? (
-                                                    <span className="loading">조회 실패</span>
-                                                ) : (() => {
-                                                    const priceChange = stock.currentPrice - stock.previousClose
-                                                    const changePercent = (priceChange / stock.previousClose) * 100
-                                                    const priceClass = priceChange > 0 ? 'positive' : priceChange < 0 ? 'negative' : ''
-                                                    const priceText = stock.currency === 'KRW'
-                                                        ? stock.currentPrice.toLocaleString()
-                                                        : `$${stock.currentPrice.toFixed(2)}`
-
-                                                    const changeText = showPercentage
-                                                        ? `(${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`
-                                                        : stock.currency === 'KRW'
-                                                            ? `(${priceChange >= 0 ? '+' : ''}${priceChange.toLocaleString()})`
-                                                            : `(${priceChange >= 0 ? '+' : ''}$${priceChange.toFixed(2)})`
-
-                                                    return <span className={priceClass}>{priceText} {changeText}</span>
-                                                })()}
-                                            </td>
-                                            <td>
-                                                {stock.error ? (
-                                                    <span className="loading">-</span>
-                                                ) : stock.currency === 'KRW' ? (
-                                                    `₩${stock.totalValue.toLocaleString()}`
-                                                ) : exchangeRate > 0 ? (
-                                                    `₩${Math.round(stock.totalValue * exchangeRate).toLocaleString()}`
-                                                ) : (
-                                                    <span className="loading">-</span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div className="summary">
-                                {krwTotal > 0 && <div>한국 주식 평가금액: ₩{krwTotal.toLocaleString()}</div>}
-                                {usdTotal > 0 && exchangeRate > 0 && (
-                                    <div>미국 주식 평가금액: ₩{Math.round(usdTotal * exchangeRate).toLocaleString()}</div>
-                                )}
-                                {exchangeRate > 0 && (() => {
-                                    const totalValue = krwTotal + (usdTotal * exchangeRate)
-                                    const profit = totalValue - INITIAL_INVESTMENT
-                                    const profitRate = (profit / INITIAL_INVESTMENT) * 100
-
-                                    return (
-                                        <>
-                                            <div className="mt-2.5 pt-2.5 border-t-2 border-gray-800 text-base">
-                                                투자 원금: ₩{INITIAL_INVESTMENT.toLocaleString()}
-                                            </div>
-                                            <div className="mt-2">
-                                                전체 총 평가금액:
-                                                ₩{totalValue.toLocaleString(undefined, {maximumFractionDigits: 0})}
-                                            </div>
-                                            <div
-                                                className={`mt-2 text-lg ${profit >= 0 ? 'text-red-700' : 'text-blue-700'}`}>
-                                                평가
-                                                손익: {profit >= 0 ? '+' : ''}₩{profit.toLocaleString(undefined, {maximumFractionDigits: 0})}
-                                                ({profit >= 0 ? '+' : ''}{profitRate.toFixed(2)}%)
-                                            </div>
-                                        </>
-                                    )
-                                })()}
-                            </div>
-                        </>
-                    )}
-                </div>
-            )}
-
-            {activeTab === 'analysis' && (
-                <div className="portfolio-section">
-                    <h2 className="text-xl md:text-2xl mb-5">시장별 분석</h2>
-
-                    {loading && stocks.length === 0 ? (
-                        <div className="empty-state">
-                            분석 데이터를 불러오는 중...
-                        </div>
-                    ) : (
-                        <>
-                            {/* 시장별 원형 차트 */}
-                            {marketData.length > 0 && (
-                                <div className="chart-container">
-                                    <h3 className="text-lg font-semibold mb-3 text-center">시장별 비중</h3>
-                                    <ResponsiveContainer width="100%" height={250}>
-                                        <PieChart>
-                                            <Pie
-                                                data={marketData}
-                                                cx="50%"
-                                                cy="50%"
-                                                labelLine={false}
-                                                label={({name, percent}) => `${name} ${(percent * 100).toFixed(1)}%`}
-                                                outerRadius={80}
-                                                fill="#8884d8"
-                                                dataKey="value"
-                                            >
-                                                {marketData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]}/>
-                                                ))}
-                                            </Pie>
-                                            <Tooltip
-                                                formatter={(value) => `₩${Math.round(value).toLocaleString()}`}
-                                            />
-                                            <Legend />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            )}
-
-                            <div className="market-summary">
-                                {marketData.map((market, index) => (
-                                    <div key={market.name} className="market-item">
-                                        <span className="market-dot" style={{backgroundColor: CHART_COLORS[index]}}></span>
-                                        <span className="market-name">{market.name}</span>
-                                        <span className="market-value">₩{Math.round(market.value).toLocaleString()}</span>
-                                        <span className="market-percent">
-                                            {totalChartValue > 0 ? ((market.value / totalChartValue) * 100).toFixed(1) : 0}%
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </>
-                    )}
-                </div>
-            )}
-
-            {/* 바텀 네비게이션 */}
-            <nav className="bottom-nav">
-                <button
-                    onClick={() => setActiveTab('portfolio')}
-                    className={activeTab === 'portfolio' ? 'active' : ''}
-                >
-                    <span className="nav-icon">📊</span>
-                    <span className="nav-label">보유종목</span>
-                </button>
-                <button
-                    onClick={() => setActiveTab('analysis')}
-                    className={activeTab === 'analysis' ? 'active' : ''}
-                >
-                    <span className="nav-icon">📈</span>
-                    <span className="nav-label">분석</span>
-                </button>
-            </nav>
         </div>
     )
 }
