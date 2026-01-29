@@ -167,11 +167,11 @@ button:disabled {
 
 /* 데스크톱/모바일 전환 */
 .desktop-only {
-  display: block;
+  display: block !important;
 }
 
 .mobile-only {
-  display: none;
+  display: none !important;
 }
 
 /* 리프레시 버튼 */
@@ -276,11 +276,11 @@ button:disabled {
 /* 모바일 반응형 디자인 */
 @media (max-width: 768px) {
   .desktop-only {
-    display: none;
+    display: none !important;
   }
 
   .mobile-only {
-    display: block;
+    display: flex !important;
   }
 
   body {
