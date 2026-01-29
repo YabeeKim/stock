@@ -9,7 +9,7 @@ const STOCK_LIST = [
 ]
 
 // 원금
-const INITIAL_INVESTMENT = 134_500_000
+const INITIAL_INVESTMENT = 136_500_000
 
 function App() {
     const [stocks, setStocks] = useState([])
