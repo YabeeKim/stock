@@ -231,34 +231,6 @@ function App() {
                         </div>
                     ) : (
                         <>
-                            {/* 원형 차트 */}
-                            {chartData.length > 0 && (
-                                <div className="chart-container">
-                                    <h3 className="text-lg font-semibold mb-3 text-center">종목별 비중</h3>
-                                    <ResponsiveContainer width="100%" height={250}>
-                                        <PieChart>
-                                            <Pie
-                                                data={chartData}
-                                                cx="50%"
-                                                cy="50%"
-                                                labelLine={false}
-                                                label={({name, percent}) => `${name} ${(percent * 100).toFixed(1)}%`}
-                                                outerRadius={80}
-                                                fill="#8884d8"
-                                                dataKey="value"
-                                            >
-                                                {chartData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]}/>
-                                                ))}
-                                            </Pie>
-                                            <Tooltip
-                                                formatter={(value) => `₩${Math.round(value).toLocaleString()}`}
-                                            />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            )}
-
                             <div className="table-wrapper">
                                 <table className="portfolio-table">
                                     <thead>
