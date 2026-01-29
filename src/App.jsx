@@ -3,9 +3,11 @@ import './App.css'
 
 // 고정된 주식 목록
 const STOCK_LIST = [
-    {name: '삼성전자', symbol: '005930', quantity: 375, market: 'KR'},
-    {name: '삼성SDI', symbol: '006400', quantity: 185, market: 'KR'},
-    {name: '테슬라', symbol: 'TSLA', quantity: 130, market: 'US'}
+    {name: '삼성전자', symbol: '005930', quantity: 375, market: 'KR', type: 'KS'},
+    {name: '삼성SDI', symbol: '006400', quantity: 185, market: 'KR', type: 'KS'},
+    {name: '한중엔시에스', symbol: '107640', quantity: 21, market: 'KR', type: 'KQ'},
+    {name: '서진시스템', symbol: '178320', quantity: 30, market: 'KR', type: 'KQ'},
+    {name: '테슬라', symbol: 'TSLA', quantity: 130, market: 'US', type: 'NASDAQ'}
 ]
 
 // 원금
@@ -29,31 +31,12 @@ function App() {
     }, [])
 
     // 주가 조회 함수
-    const fetchStockPrice = async (symbol, market) => {
+    const fetchStockPrice = async (symbol, market, type) => {
         try {
             // 한국 주식은 .KS (코스피) 또는 .KQ (코스닥) 추가
-            const ticker = market === 'KR' ? `${symbol}.KS` : symbol
+            const ticker = market === 'KR' ? `${symbol}.${type}` : symbol
 
             const response = await fetch(`/api/stock/${ticker}`)
-
-            if (!response.ok) {
-                // 한국 주식일 경우 .KQ (코스닥)도 시도
-                if (market === 'KR') {
-                    const kosdaqTicker = `${symbol}.KQ`
-                    const kosdaqResponse = await fetch(`/api/stock/${kosdaqTicker}`)
-                    if (kosdaqResponse.ok) {
-                        const data = await kosdaqResponse.json()
-                        const meta = data.chart.result[0].meta
-                        return {
-                            price: meta.regularMarketPrice,
-                            previousClose: meta.chartPreviousClose || meta.previousClose,
-                            currency: meta.currency,
-                            ticker: kosdaqTicker
-                        }
-                    }
-                }
-                throw new Error('주식 정보를 찾을 수 없습니다')
-            }
 
             const data = await response.json()
             const meta = data.chart.result[0].meta
@@ -106,7 +89,7 @@ function App() {
                 fetchExchangeRate(),
                 ...STOCK_LIST.map(async (stock, index) => {
                     try {
-                        const stockData = await fetchStockPrice(stock.symbol, stock.market)
+                        const stockData = await fetchStockPrice(stock.symbol, stock.market, stock.type)
                         return {
                             id: index,
                             name: stock.name,
