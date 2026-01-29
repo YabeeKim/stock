@@ -1,5 +1,4 @@
-import {useState, useEffect} from 'react'
-import {PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer} from 'recharts'
+import {useEffect, useState} from 'react'
 import './App.css'
 
 // 고정된 주식 목록
@@ -146,6 +145,20 @@ function App() {
         }
     }
 
+    // 총 평가금액 계산
+    const getTotalValue = () => {
+        const krwStocks = stocks.filter(s => s.currency === 'KRW')
+        const usdStocks = stocks.filter(s => s.currency === 'USD')
+
+        const krwTotal = krwStocks.reduce((sum, stock) => sum + stock.totalValue, 0)
+        const usdTotal = usdStocks.reduce((sum, stock) => sum + stock.totalValue, 0)
+
+        return {krwTotal, usdTotal}
+    }
+
+    const {krwTotal, usdTotal} = getTotalValue()
+
+
     return (
         <div className="container bg-gray-100 p-5 md:p-10 min-h-screen">
             <h1 className="text-center mb-8 text-gray-800 text-3xl md:text-4xl">📈 주식 포트폴리오</h1>
@@ -171,6 +184,107 @@ function App() {
                 })}
                 </div>
             )}
+            <div className="portfolio-section">
+                <div className="flex justify-between items-center mb-5">
+                    <h2 className="text-xl md:text-2xl">보유 종목</h2>
+                    <button onClick={loadStockPrices} disabled={loading}>
+                        {loading ? '갱신 중...' : '가격 갱신'}
+                    </button>
+                </div>
+
+                {loading && stocks.length === 0 ? (
+                    <div className="empty-state">
+                        주가 정보를 불러오는 중...
+                    </div>
+                ) : (
+                    <>
+                        <div className="table-wrapper">
+                            <table className="portfolio-table">
+                                <thead>
+                                <tr>
+                                    <th>종목명</th>
+                                    <th>수량</th>
+                                    <th>현재가</th>
+                                    <th>평가금액</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {stocks.map((stock) => (
+                                    <tr key={stock.id}>
+                                        <td>{stock.name}</td>
+                                        <td>{stock.quantity.toLocaleString()}</td>
+                                        <td
+                                            onClick={() => setShowPercentage(!showPercentage)}
+                                            className="cursor-pointer"
+                                        >
+                                            {stock.error ? (
+                                                <span className="loading">조회 실패</span>
+                                            ) : (() => {
+                                                const priceChange = stock.currentPrice - stock.previousClose
+                                                const changePercent = (priceChange / stock.previousClose) * 100
+                                                const priceClass = priceChange > 0 ? 'positive' : priceChange < 0 ? 'negative' : ''
+                                                const priceText = stock.currency === 'KRW'
+                                                    ? stock.currentPrice.toLocaleString()
+                                                    : `$${stock.currentPrice.toFixed(2)}`
+
+                                                const changeText = showPercentage
+                                                    ? `(${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`
+                                                    : stock.currency === 'KRW'
+                                                        ? `(${priceChange >= 0 ? '+' : ''}${priceChange.toLocaleString()})`
+                                                        : `(${priceChange >= 0 ? '+' : ''}$${priceChange.toFixed(2)})`
+
+                                                return <span className={priceClass}>{priceText} {changeText}</span>
+                                            })()}
+                                        </td>
+                                        <td>
+                                            {stock.error ? (
+                                                <span className="loading">-</span>
+                                            ) : stock.currency === 'KRW' ? (
+                                                `₩${stock.totalValue.toLocaleString()}`
+                                            ) : exchangeRate > 0 ? (
+                                                `₩${Math.round(stock.totalValue * exchangeRate).toLocaleString()}`
+                                            ) : (
+                                                <span className="loading">-</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="summary">
+                            {krwTotal > 0 && <div>한국 주식 평가금액: ₩{krwTotal.toLocaleString()}</div>}
+                            {usdTotal > 0 && exchangeRate > 0 && (
+                                <div>미국 주식 평가금액: ₩{Math.round(usdTotal * exchangeRate).toLocaleString()}</div>
+                            )}
+                            {exchangeRate > 0 && (() => {
+                                const totalValue = krwTotal + (usdTotal * exchangeRate)
+                                const profit = totalValue - INITIAL_INVESTMENT
+                                const profitRate = (profit / INITIAL_INVESTMENT) * 100
+
+                                return (
+                                    <>
+                                        <div className="mt-2.5 pt-2.5 border-t-2 border-gray-800 text-base">
+                                            투자 원금: ₩{INITIAL_INVESTMENT.toLocaleString()}
+                                        </div>
+                                        <div className="mt-2">
+                                            전체 총 평가금액:
+                                            ₩{totalValue.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                                        </div>
+                                        <div
+                                            className={`mt-2 text-lg ${profit >= 0 ? 'text-red-700' : 'text-blue-700'}`}>
+                                            평가
+                                            손익: {profit >= 0 ? '+' : ''}₩{profit.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                                            ({profit >= 0 ? '+' : ''}{profitRate.toFixed(2)}%)
+                                        </div>
+                                    </>
+                                )
+                            })()}
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     )
 }
