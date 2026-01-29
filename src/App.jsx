@@ -172,7 +172,7 @@ function App() {
                 })}
             </div>
 
-            {error && <div className="error text-center mb-5">{error}</div>}
+            {error && <div className="error text-center mb-5">{ error}</div>}
 
             {exchangeRate > 0 && (
                 <div className="exchange-rate">
