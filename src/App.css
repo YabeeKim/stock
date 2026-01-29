@@ -160,6 +160,17 @@ button:disabled {
   margin-bottom: 20px;
 }
 
+/* Pull to refresh */
+.pull-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #666;
+  font-size: 14px;
+  transition: height 0.2s ease-out;
+}
+
 /* 환율 인라인 스타일 (데스크톱) */
 .exchange-inline {
   font-weight: bold;

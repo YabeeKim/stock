@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useRef, useCallback} from 'react'
 import './App.css'
 
 // 원금
@@ -33,6 +33,13 @@ function App() {
     const [currentTime, setCurrentTime] = useState(new Date())
     const [exchangeRate, setExchangeRate] = useState(0)
     const [showPercentage, setShowPercentage] = useState(false)
+
+    // Pull to refresh
+    const [pullDistance, setPullDistance] = useState(0)
+    const [isRefreshing, setIsRefreshing] = useState(false)
+    const touchStartY = useRef(0)
+    const containerRef = useRef(null)
+    const PULL_THRESHOLD = 80
 
     // 현재 시간 업데이트
     useEffect(() => {
@@ -89,6 +96,35 @@ function App() {
     useEffect(() => {
         loadStockPrices()
     }, [])
+
+    // Pull to refresh handlers
+    const handleTouchStart = useCallback((e) => {
+        if (containerRef.current?.scrollTop === 0) {
+            touchStartY.current = e.touches[0].clientY
+        }
+    }, [])
+
+    const handleTouchMove = useCallback((e) => {
+        if (touchStartY.current === 0 || isRefreshing) return
+
+        const currentY = e.touches[0].clientY
+        const diff = currentY - touchStartY.current
+
+        if (diff > 0 && containerRef.current?.scrollTop === 0) {
+            e.preventDefault()
+            setPullDistance(Math.min(diff * 0.5, PULL_THRESHOLD * 1.5))
+        }
+    }, [isRefreshing])
+
+    const handleTouchEnd = useCallback(async () => {
+        if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
+            setIsRefreshing(true)
+            await loadStockPrices()
+            setIsRefreshing(false)
+        }
+        setPullDistance(0)
+        touchStartY.current = 0
+    }, [pullDistance, isRefreshing])
 
     // 주가 로드
     const loadStockPrices = async () => {
@@ -155,13 +191,25 @@ function App() {
     const {krwTotal, usdTotal} = getTotalValue()
 
     return (
-        <div className="container bg-gray-100 p-5 md:p-10 min-h-screen">
-            <div className="flex">
-                <h1 className="text-center mb-8 text-gray-800 text-3xl md:text-4xl">📈 주식 포트폴리오</h1>
-                <button className="refresh-btn" onClick={loadStockPrices} disabled={loading}>
-                    {loading ? '⏳' : '🔄'}
-                </button>
+        <div
+            ref={containerRef}
+            className="container bg-gray-100 p-5 md:p-10 min-h-screen"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+        >
+            {/* Pull to refresh indicator */}
+            <div
+                className="pull-indicator"
+                style={{
+                    height: pullDistance,
+                    opacity: Math.min(pullDistance / PULL_THRESHOLD, 1)
+                }}
+            >
+                {isRefreshing ? '갱신 중...' : pullDistance >= PULL_THRESHOLD ? '놓으면 갱신' : '당겨서 갱신'}
             </div>
+
+            <h1 className="text-gray-800 text-3xl md:text-4xl">📈 주식 포트폴리오</h1>
 
             <div className="current-time">
                 {currentTime.toLocaleString('ko-KR', {
@@ -172,14 +220,6 @@ function App() {
                     minute: '2-digit',
                     second: '2-digit'
                 })}
-                {exchangeRate > 0 && (
-                    <span className="exchange-inline desktop-only">
-                        {' '}| $1 = ₩{exchangeRate.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    })}
-                    </span>
-                )}
             </div>
 
             {error && <div className="error text-center mb-5">{error}</div>}
@@ -195,53 +235,53 @@ function App() {
                         <div className="desktop-only">
                             <table className="portfolio-table">
                                 <thead>
-                                    <tr>
-                                        <th>종목</th>
-                                        <th>현재가</th>
-                                        <th>등락</th>
-                                        <th>원금</th>
-                                        <th>평가금액</th>
-                                        <th>수익률</th>
-                                    </tr>
+                                <tr>
+                                    <th>종목</th>
+                                    <th>현재가</th>
+                                    <th>등락</th>
+                                    <th>원금</th>
+                                    <th>평가금액</th>
+                                    <th>수익률</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    {stocks.map((stock) => {
-                                        const priceChange = stock.currentPrice - stock.previousClose
-                                        const changePercent = (priceChange / stock.previousClose) * 100
-                                        const evalValue = stock.currency === 'KRW'
-                                            ? stock.totalValue
-                                            : stock.totalValue * exchangeRate
-                                        const profitRate = ((evalValue - stock.base) / stock.base) * 100
+                                {stocks.map((stock) => {
+                                    const priceChange = stock.currentPrice - stock.previousClose
+                                    const changePercent = (priceChange / stock.previousClose) * 100
+                                    const evalValue = stock.currency === 'KRW'
+                                        ? stock.totalValue
+                                        : stock.totalValue * exchangeRate
+                                    const profitRate = ((evalValue - stock.base) / stock.base) * 100
 
-                                        return (
-                                            <tr
-                                                key={stock.id}
-                                                className="table-row-link"
-                                                onClick={() => window.open(getNaverLink(stock), '_blank')}
-                                            >
-                                                <td>{stock.name} {stock.quantity.toLocaleString()}주</td>
-                                                <td>
-                                                    {stock.error ? '-' : stock.currency === 'KRW'
-                                                        ? `₩${stock.currentPrice.toLocaleString()}`
-                                                        : `$${stock.currentPrice.toFixed(2)}`}
-                                                </td>
-                                                <td className={priceChange > 0 ? 'positive' : priceChange < 0 ? 'negative' : ''}>
-                                                    {stock.error ? '-' : showPercentage
-                                                        ? `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`
-                                                        : stock.currency === 'KRW'
-                                                            ? `${priceChange >= 0 ? '+' : ''}${priceChange.toLocaleString()}`
-                                                            : `${priceChange >= 0 ? '+' : ''}$${priceChange.toFixed(2)}`}
-                                                </td>
-                                                <td>₩{stock.base.toLocaleString()}</td>
-                                                <td>
-                                                    {stock.error ? '-' : `₩${Math.round(evalValue).toLocaleString()}`}
-                                                </td>
-                                                <td className={profitRate >= 0 ? 'positive' : 'negative'}>
-                                                    {stock.error ? '-' : `${profitRate >= 0 ? '+' : ''}${profitRate.toFixed(2)}%`}
-                                                </td>
-                                            </tr>
-                                        )
-                                    })}
+                                    return (
+                                        <tr
+                                            key={stock.id}
+                                            className="table-row-link"
+                                            onClick={() => window.open(getNaverLink(stock), '_blank')}
+                                        >
+                                            <td>{stock.name} {stock.quantity.toLocaleString()}주</td>
+                                            <td>
+                                                {stock.error ? '-' : stock.currency === 'KRW'
+                                                    ? `₩${stock.currentPrice.toLocaleString()}`
+                                                    : `$${stock.currentPrice.toFixed(2)}`}
+                                            </td>
+                                            <td className={priceChange > 0 ? 'positive' : priceChange < 0 ? 'negative' : ''}>
+                                                {stock.error ? '-' : showPercentage
+                                                    ? `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`
+                                                    : stock.currency === 'KRW'
+                                                        ? `${priceChange >= 0 ? '+' : ''}${priceChange.toLocaleString()}`
+                                                        : `${priceChange >= 0 ? '+' : ''}$${priceChange.toFixed(2)}`}
+                                            </td>
+                                            <td>₩{stock.base.toLocaleString()}</td>
+                                            <td>
+                                                {stock.error ? '-' : `₩${Math.round(evalValue).toLocaleString()}`}
+                                            </td>
+                                            <td className={profitRate >= 0 ? 'positive' : 'negative'}>
+                                                {stock.error ? '-' : `${profitRate >= 0 ? '+' : ''}${profitRate.toFixed(2)}%`}
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                                 </tbody>
                             </table>
                         </div>
@@ -316,9 +356,9 @@ function App() {
                                         {isTesla && exchangeRate > 0 && (
                                             <div className="card-row-5">
                                                 환율 $1 = ₩{exchangeRate.toLocaleString(undefined, {
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2
-                                                })}
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
                                             </div>
                                         )}
                                     </div>
