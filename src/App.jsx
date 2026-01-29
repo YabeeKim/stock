@@ -1,18 +1,23 @@
 import {useState, useEffect} from 'react'
 import './App.css'
 
+// 원금
+const SAMSUNG_INVESTMENT = 30_000_000
+const TESLA_INVESTMENT = 60_000_000
+const SDI_INVESTMENT = 44_500_000
+const HANJUNG_INVESTMENT = 1_000_000
+const SEOJIN_INVESTMENT = 1_000_000
+const INITIAL_INVESTMENT = SDI_INVESTMENT + SAMSUNG_INVESTMENT + TESLA_INVESTMENT + HANJUNG_INVESTMENT + SEOJIN_INVESTMENT
+
 // 고정된 주식 목록
 const STOCK_LIST = [
-    {name: '삼성전자', symbol: '005930', quantity: 375, market: 'KR', type: 'KS'},
-    {name: '삼성SDI', symbol: '006400', quantity: 185, market: 'KR', type: 'KS'},
-    {name: '한중엔시에스', symbol: '107640', quantity: 21, market: 'KR', type: 'KQ'},
-    {name: '서진시스템', symbol: '178320', quantity: 30, market: 'KR', type: 'KQ'},
-    {name: '테슬라', symbol: 'TSLA', quantity: 130, market: 'US', type: 'NASDAQ'}
+    {name: '삼성전자', symbol: '005930', quantity: 375, market: 'KR', type: 'KS', base: SAMSUNG_INVESTMENT},
+    {name: '삼성SDI', symbol: '006400', quantity: 185, market: 'KR', type: 'KS', base: SDI_INVESTMENT},
+    {name: '한중엔시에스', symbol: '107640', quantity: 21, market: 'KR', type: 'KQ', base: HANJUNG_INVESTMENT},
+    {name: '서진시스템', symbol: '178320', quantity: 30, market: 'KR', type: 'KQ', base: SEOJIN_INVESTMENT},
+    {name: '테슬라', symbol: 'TSLA', quantity: 130, market: 'US', type: 'NASDAQ', base: TESLA_INVESTMENT}
 ]
 
-// 원금
-const ADDITIONAL_INVESTMENT = 2_000_000 // 서진, 한중
-const INITIAL_INVESTMENT = 134_500_000 + ADDITIONAL_INVESTMENT
 
 function App() {
     const [stocks, setStocks] = useState([])
@@ -99,7 +104,8 @@ function App() {
                             previousClose: stockData.previousClose,
                             currency: stockData.currency,
                             market: stock.market,
-                            totalValue: stockData.price * stock.quantity
+                            totalValue: stockData.price * stock.quantity,
+                            base: stock.base
                         }
                     } catch (err) {
                         return {
@@ -112,6 +118,7 @@ function App() {
                             currency: stock.market === 'KR' ? 'KRW' : 'USD',
                             market: stock.market,
                             totalValue: 0,
+                            base: stock.base,
                             error: true
                         }
                     }
@@ -188,6 +195,8 @@ function App() {
                                     <th>수량</th>
                                     <th>현재가</th>
                                     <th>평가금액</th>
+                                    <th>원금</th>
+                                    <th>수익률</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -228,6 +237,23 @@ function App() {
                                             ) : (
                                                 <span className="loading">-</span>
                                             )}
+                                        </td>
+                                        <td>₩{stock.base.toLocaleString()}</td>
+                                        <td>
+                                            {stock.error ? (
+                                                <span className="loading">-</span>
+                                            ) : (() => {
+                                                const evalValue = stock.currency === 'KRW'
+                                                    ? stock.totalValue
+                                                    : stock.totalValue * exchangeRate
+                                                const profitRate = ((evalValue - stock.base) / stock.base) * 100
+                                                const profitClass = profitRate >= 0 ? 'text-red-700' : 'text-blue-700'
+                                                return (
+                                                    <span className={profitClass}>
+                                                        {profitRate >= 0 ? '+' : ''}{profitRate.toFixed(2)}%
+                                                    </span>
+                                                )
+                                            })()}
                                         </td>
                                     </tr>
                                 ))}
