@@ -18,6 +18,14 @@ const STOCK_LIST = [
     {name: '테슬라', symbol: 'TSLA', quantity: 130, market: 'US', type: 'NASDAQ', base: TESLA_INVESTMENT}
 ]
 
+// 네이버 증권 링크 생성
+const getNaverLink = (stock) => {
+    if (stock.market === 'US') {
+        return `https://m.stock.naver.com/worldstock/stock/${stock.symbol}.O/total`
+    }
+    return `https://finance.naver.com/item/main.naver?code=${stock.symbol}`
+}
+
 function App() {
     const [stocks, setStocks] = useState([])
     const [loading, setLoading] = useState(true)
@@ -159,24 +167,23 @@ function App() {
                     minute: '2-digit',
                     second: '2-digit'
                 })}
+                {exchangeRate > 0 && (
+                    <span className="exchange-inline desktop-only">
+                        {' '}| $1 = ₩{exchangeRate.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })}
+                    </span>
+                )}
             </div>
 
             {error && <div className="error text-center mb-5">{error}</div>}
 
-            {exchangeRate > 0 && (
-                <div className="exchange-rate">
-                    💱 환율: $1 = ₩{exchangeRate.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                })}
-                </div>
-            )}
-
             <div className="portfolio-section">
                 <div className="flex justify-between items-center mb-5">
                     <h2 className="text-xl md:text-2xl">보유 종목</h2>
-                    <button onClick={loadStockPrices} disabled={loading}>
-                        {loading ? '갱신 중...' : '가격 갱신'}
+                    <button className="refresh-btn" onClick={loadStockPrices} disabled={loading}>
+                        {loading ? '⏳' : '🔄'}
                     </button>
                 </div>
 
@@ -186,7 +193,63 @@ function App() {
                     </div>
                 ) : (
                     <>
-                        <div className="stock-cards">
+                        {/* 데스크톱 테이블 */}
+                        <div className="desktop-only">
+                            <table className="portfolio-table">
+                                <thead>
+                                    <tr>
+                                        <th>종목</th>
+                                        <th>현재가</th>
+                                        <th>등락</th>
+                                        <th>원금</th>
+                                        <th>평가금액</th>
+                                        <th>수익률</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {stocks.map((stock) => {
+                                        const priceChange = stock.currentPrice - stock.previousClose
+                                        const changePercent = (priceChange / stock.previousClose) * 100
+                                        const evalValue = stock.currency === 'KRW'
+                                            ? stock.totalValue
+                                            : stock.totalValue * exchangeRate
+                                        const profitRate = ((evalValue - stock.base) / stock.base) * 100
+
+                                        return (
+                                            <tr
+                                                key={stock.id}
+                                                className="table-row-link"
+                                                onClick={() => window.open(getNaverLink(stock), '_blank')}
+                                            >
+                                                <td>{stock.name} {stock.quantity.toLocaleString()}주</td>
+                                                <td>
+                                                    {stock.error ? '-' : stock.currency === 'KRW'
+                                                        ? `₩${stock.currentPrice.toLocaleString()}`
+                                                        : `$${stock.currentPrice.toFixed(2)}`}
+                                                </td>
+                                                <td className={priceChange > 0 ? 'positive' : priceChange < 0 ? 'negative' : ''}>
+                                                    {stock.error ? '-' : showPercentage
+                                                        ? `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`
+                                                        : stock.currency === 'KRW'
+                                                            ? `${priceChange >= 0 ? '+' : ''}${priceChange.toLocaleString()}`
+                                                            : `${priceChange >= 0 ? '+' : ''}$${priceChange.toFixed(2)}`}
+                                                </td>
+                                                <td>₩{stock.base.toLocaleString()}</td>
+                                                <td>
+                                                    {stock.error ? '-' : `₩${Math.round(evalValue).toLocaleString()}`}
+                                                </td>
+                                                <td className={profitRate >= 0 ? 'positive' : 'negative'}>
+                                                    {stock.error ? '-' : `${profitRate >= 0 ? '+' : ''}${profitRate.toFixed(2)}%`}
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* 모바일 카드 */}
+                        <div className="stock-cards mobile-only">
                             {stocks.map((stock) => {
                                 const priceChange = stock.currentPrice - stock.previousClose
                                 const changePercent = (priceChange / stock.previousClose) * 100
@@ -194,9 +257,14 @@ function App() {
                                     ? stock.totalValue
                                     : stock.totalValue * exchangeRate
                                 const profitRate = ((evalValue - stock.base) / stock.base) * 100
+                                const isTesla = stock.market === 'US'
 
                                 return (
-                                    <div key={stock.id} className="stock-card">
+                                    <div
+                                        key={stock.id}
+                                        className="stock-card"
+                                        onClick={() => window.open(getNaverLink(stock), '_blank')}
+                                    >
                                         <div className="card-row-1">
                                             <span className="stock-name">
                                                 {stock.name} {stock.quantity.toLocaleString()}주
@@ -211,7 +279,10 @@ function App() {
                                         </div>
                                         <div
                                             className="card-row-2"
-                                            onClick={() => setShowPercentage(!showPercentage)}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                setShowPercentage(!showPercentage)
+                                            }}
                                         >
                                             {stock.error ? (
                                                 <span className="loading">조회 실패</span>
@@ -244,6 +315,14 @@ function App() {
                                                 <span className="loading">평가 -</span>
                                             )}
                                         </div>
+                                        {isTesla && exchangeRate > 0 && (
+                                            <div className="card-row-5">
+                                                환율 $1 = ₩{exchangeRate.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
                                 )
                             })}

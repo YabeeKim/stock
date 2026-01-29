@@ -160,16 +160,45 @@ button:disabled {
   margin-bottom: 20px;
 }
 
-.exchange-rate {
-  text-align: center;
-  background: white;
-  padding: 12px 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #2196F3;
+/* 환율 인라인 스타일 (데스크톱) */
+.exchange-inline {
+  font-weight: bold;
+}
+
+/* 데스크톱/모바일 전환 */
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+/* 리프레시 버튼 */
+.refresh-btn {
+  border: none !important;
+  background: transparent !important;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px !important;
+}
+
+.refresh-btn:hover {
+  background: #f5f5f5 !important;
+}
+
+.refresh-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* 클릭 가능한 테이블 row */
+.table-row-link {
+  cursor: pointer;
+}
+
+.table-row-link:hover {
+  background-color: #e8f4fc;
 }
 
 .table-wrapper {
@@ -190,6 +219,12 @@ button:disabled {
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.stock-card:hover {
+  background-color: #f8f9fa;
 }
 
 .card-row-1 {
@@ -230,8 +265,24 @@ button:disabled {
   font-weight: 500;
 }
 
+.card-row-5 {
+  font-size: 13px;
+  color: #888;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+}
+
 /* 모바일 반응형 디자인 */
 @media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: block;
+  }
+
   body {
     padding: 10px;
   }
@@ -243,12 +294,6 @@ button:disabled {
 
   .current-time {
     font-size: 12px;
-    margin-bottom: 15px;
-  }
-
-  .exchange-rate {
-    font-size: 14px;
-    padding: 10px 15px;
     margin-bottom: 15px;
   }
 
@@ -290,6 +335,10 @@ button:disabled {
     font-size: 13px;
   }
 
+  .card-row-5 {
+    font-size: 12px;
+  }
+
   .summary {
     font-size: 14px;
     padding: 12px;
@@ -325,7 +374,8 @@ button:disabled {
 
   .card-row-2,
   .card-row-3,
-  .card-row-4 {
+  .card-row-4,
+  .card-row-5 {
     font-size: 12px;
   }
 
