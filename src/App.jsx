@@ -18,7 +18,6 @@ const STOCK_LIST = [
     {name: '테슬라', symbol: 'TSLA', quantity: 130, market: 'US', type: 'NASDAQ', base: TESLA_INVESTMENT}
 ]
 
-
 function App() {
     const [stocks, setStocks] = useState([])
     const [loading, setLoading] = useState(true)
@@ -187,36 +186,39 @@ function App() {
                     </div>
                 ) : (
                     <>
-                        <div className="table-wrapper">
-                            <table className="portfolio-table">
-                                <thead>
-                                <tr>
-                                    <th>종목명</th>
-                                    <th>수량</th>
-                                    <th>현재가</th>
-                                    <th>평가금액</th>
-                                    <th>원금</th>
-                                    <th>수익률</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {stocks.map((stock) => (
-                                    <tr key={stock.id}>
-                                        <td>{stock.name}</td>
-                                        <td>{stock.quantity.toLocaleString()}</td>
-                                        <td
+                        <div className="stock-cards">
+                            {stocks.map((stock) => {
+                                const priceChange = stock.currentPrice - stock.previousClose
+                                const changePercent = (priceChange / stock.previousClose) * 100
+                                const evalValue = stock.currency === 'KRW'
+                                    ? stock.totalValue
+                                    : stock.totalValue * exchangeRate
+                                const profitRate = ((evalValue - stock.base) / stock.base) * 100
+
+                                return (
+                                    <div key={stock.id} className="stock-card">
+                                        <div className="card-row-1">
+                                            <span className="stock-name">
+                                                {stock.name} {stock.quantity.toLocaleString()}주
+                                            </span>
+                                            {stock.error ? (
+                                                <span className="loading">-</span>
+                                            ) : (
+                                                <span className={profitRate >= 0 ? 'positive' : 'negative'}>
+                                                    {profitRate >= 0 ? '+' : ''}{profitRate.toFixed(2)}%
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div
+                                            className="card-row-2"
                                             onClick={() => setShowPercentage(!showPercentage)}
-                                            className="cursor-pointer"
                                         >
                                             {stock.error ? (
                                                 <span className="loading">조회 실패</span>
                                             ) : (() => {
-                                                const priceChange = stock.currentPrice - stock.previousClose
-                                                const changePercent = (priceChange / stock.previousClose) * 100
-                                                const priceClass = priceChange > 0 ? 'positive' : priceChange < 0 ? 'negative' : ''
                                                 const priceText = stock.currency === 'KRW'
-                                                    ? stock.currentPrice.toLocaleString()
-                                                    : `$${stock.currentPrice.toFixed(2)}`
+                                                    ? `현재가 ${stock.currentPrice.toLocaleString()}`
+                                                    : `현재가 $${stock.currentPrice.toFixed(2)}`
 
                                                 const changeText = showPercentage
                                                     ? `(${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`
@@ -224,47 +226,33 @@ function App() {
                                                         ? `(${priceChange >= 0 ? '+' : ''}${priceChange.toLocaleString()})`
                                                         : `(${priceChange >= 0 ? '+' : ''}$${priceChange.toFixed(2)})`
 
+                                                const priceClass = priceChange > 0 ? 'positive' : priceChange < 0 ? 'negative' : ''
                                                 return <span className={priceClass}>{priceText} {changeText}</span>
                                             })()}
-                                        </td>
-                                        <td>
+                                        </div>
+                                        <div className="card-row-3">
+                                            원금 ₩{stock.base.toLocaleString()}
+                                        </div>
+                                        <div className="card-row-4">
                                             {stock.error ? (
-                                                <span className="loading">-</span>
+                                                <span className="loading">평가 -</span>
                                             ) : stock.currency === 'KRW' ? (
-                                                `₩${stock.totalValue.toLocaleString()}`
+                                                `평가 ₩${stock.totalValue.toLocaleString()}`
                                             ) : exchangeRate > 0 ? (
-                                                `₩${Math.round(stock.totalValue * exchangeRate).toLocaleString()}`
+                                                `평가 ₩${Math.round(stock.totalValue * exchangeRate).toLocaleString()}`
                                             ) : (
-                                                <span className="loading">-</span>
+                                                <span className="loading">평가 -</span>
                                             )}
-                                        </td>
-                                        <td>₩{stock.base.toLocaleString()}</td>
-                                        <td>
-                                            {stock.error ? (
-                                                <span className="loading">-</span>
-                                            ) : (() => {
-                                                const evalValue = stock.currency === 'KRW'
-                                                    ? stock.totalValue
-                                                    : stock.totalValue * exchangeRate
-                                                const profitRate = ((evalValue - stock.base) / stock.base) * 100
-                                                const profitClass = profitRate >= 0 ? 'text-red-700' : 'text-blue-700'
-                                                return (
-                                                    <span className={profitClass}>
-                                                        {profitRate >= 0 ? '+' : ''}{profitRate.toFixed(2)}%
-                                                    </span>
-                                                )
-                                            })()}
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
+                                        </div>
+                                    </div>
+                                )
+                            })}
                         </div>
 
                         <div className="summary">
-                            {krwTotal > 0 && <div>한국 주식 평가금액: ₩{krwTotal.toLocaleString()}</div>}
+                            {krwTotal > 0 && <div>🇰🇷 ₩{krwTotal.toLocaleString()}</div>}
                             {usdTotal > 0 && exchangeRate > 0 && (
-                                <div>미국 주식 평가금액: ₩{Math.round(usdTotal * exchangeRate).toLocaleString()}</div>
+                                <div>🇺🇸 ₩{Math.round(usdTotal * exchangeRate).toLocaleString()}</div>
                             )}
                             {exchangeRate > 0 && (() => {
                                 const totalValue = krwTotal + (usdTotal * exchangeRate)

@@ -177,6 +177,59 @@ button:disabled {
   -webkit-overflow-scrolling: touch;
 }
 
+/* 주식 카드 레이아웃 */
+.stock-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stock-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.card-row-1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.stock-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #333;
+}
+
+.card-row-2 {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.card-row-3,
+.card-row-4 {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.6;
+}
+
+.card-row-3 {
+  color: #666;
+}
+
+.card-row-4 {
+  font-weight: 500;
+}
+
 /* 모바일 반응형 디자인 */
 @media (max-width: 768px) {
   body {
@@ -200,7 +253,7 @@ button:disabled {
   }
 
   .portfolio-section {
-    padding: 15px;
+    padding: 12px;
   }
 
   .portfolio-section h2 {
@@ -212,18 +265,29 @@ button:disabled {
     padding: 8px 15px;
   }
 
-  .portfolio-table {
+  /* 카드 모바일 스타일 */
+  .stock-cards {
+    gap: 10px;
+  }
+
+  .stock-card {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .card-row-1 {
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .card-row-2 {
     font-size: 13px;
+    margin-bottom: 8px;
   }
 
-  .portfolio-table th,
-  .portfolio-table td {
-    padding: 8px 6px;
-    font-size: 12px;
-  }
-
-  .portfolio-table th {
-    font-size: 12px;
+  .card-row-3,
+  .card-row-4 {
+    font-size: 13px;
   }
 
   .summary {
@@ -251,10 +315,18 @@ button:disabled {
     font-size: 20px;
   }
 
-  .portfolio-table th,
-  .portfolio-table td {
-    padding: 6px 4px;
-    font-size: 11px;
+  .stock-card {
+    padding: 10px;
+  }
+
+  .card-row-1 {
+    font-size: 14px;
+  }
+
+  .card-row-2,
+  .card-row-3,
+  .card-row-4 {
+    font-size: 12px;
   }
 
   .summary {
