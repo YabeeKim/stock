@@ -11,11 +11,13 @@ const fetchStockPrice = async (symbol, market, type) => {
         const price = meta.regularMarketPrice
         const previousClose = meta.chartPreviousClose || meta.previousClose
         const currency = meta.currency
+        const marketTime = meta.regularMarketTime ? new Date(meta.regularMarketTime * 1000) : null
 
         return {
             price,
             previousClose,
             currency,
+            marketTime,
             ticker: market === 'KR' ? ticker : symbol
         }
     } catch (err) {
@@ -46,6 +48,7 @@ export const useStockData = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [exchangeRate, setExchangeRate] = useState(0)
+    const [lastUpdated, setLastUpdated] = useState(null)
 
     const loadStockPrices = useCallback(async () => {
         setLoading(true)
@@ -67,7 +70,8 @@ export const useStockData = () => {
                             currency: stockData.currency,
                             market: stock.market,
                             totalValue: stockData.price * stock.quantity,
-                            base: stock.base
+                            base: stock.base,
+                            marketTime: stockData.marketTime
                         }
                     } catch (err) {
                         return {
@@ -81,6 +85,7 @@ export const useStockData = () => {
                             market: stock.market,
                             totalValue: 0,
                             base: stock.base,
+                            marketTime: null,
                             error: true
                         }
                     }
@@ -89,6 +94,15 @@ export const useStockData = () => {
 
             setExchangeRate(rate)
             setStocks(stocksWithPrices)
+
+            // 가장 최근 시장 데이터 시간 추출
+            const marketTimes = stocksWithPrices
+                .map(s => s.marketTime)
+                .filter(t => t !== null)
+            if (marketTimes.length > 0) {
+                const latestTime = new Date(Math.max(...marketTimes.map(t => t.getTime())))
+                setLastUpdated(latestTime)
+            }
         } catch (err) {
             setError('가격 조회 실패')
         } finally {
@@ -117,6 +131,7 @@ export const useStockData = () => {
         loading,
         error,
         exchangeRate,
+        lastUpdated,
         loadStockPrices,
         getTotalValue
     }
