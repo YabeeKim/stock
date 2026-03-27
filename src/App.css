@@ -402,10 +402,62 @@ button:disabled {
 
 /* 차트 컨테이너 */
 .chart-container {
-  background: #f8f9fa;
-  border-radius: 8px;
+  background: white;
+  border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.chart-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+.chart-loading,
+.chart-error {
+  text-align: center;
+  padding: 40px 0;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.chart-ath {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.chart-ath strong {
+  color: #ef4444;
+}
+
+.chart-ath-date {
+  margin-left: 6px;
+  color: #9ca3af;
+}
+
+.chart-tooltip {
+  background: #1f2937;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.chart-tooltip-date {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-bottom: 2px;
+}
+
+.chart-tooltip-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
 }
 
 /* 시장별 요약 */

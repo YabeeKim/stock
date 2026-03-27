@@ -4,6 +4,7 @@ import {usePullToRefresh} from '../hooks/usePullToRefresh'
 import {StockTable} from '../components/desktop/StockTable'
 import {StockCards} from '../components/mobile/StockCards'
 import {Summary} from '../components/common/Summary'
+import {PortfolioChart} from '../components/common/PortfolioChart'
 
 export const Portfolio = () => {
     const [currentTime, setCurrentTime] = useState(new Date())
@@ -102,6 +103,8 @@ export const Portfolio = () => {
                             usdTotal={usdTotal}
                             exchangeRate={exchangeRate}
                         />
+
+                        <PortfolioChart />
                     </>
                 )}
             </div>
