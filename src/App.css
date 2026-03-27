@@ -442,6 +442,12 @@ button:disabled {
   color: #9ca3af;
 }
 
+.chart-ath-profit {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .chart-tooltip {
   background: #1f2937;
   border-radius: 8px;

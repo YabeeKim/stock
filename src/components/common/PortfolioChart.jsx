@@ -9,6 +9,7 @@ import {
     ReferenceDot
 } from 'recharts'
 import { usePortfolioHistory } from '../../hooks/usePortfolioHistory'
+import { INITIAL_INVESTMENT } from '../../data/stocks'
 
 const formatValue = (value) => {
     if (value >= 100_000_000) {
@@ -100,12 +101,20 @@ export const PortfolioChart = () => {
                     )}
                 </AreaChart>
             </ResponsiveContainer>
-            {allTimeHigh && (
-                <div className="chart-ath">
-                    역대 최고 평가금액: <strong>₩{allTimeHigh.value.toLocaleString()}</strong>
-                    <span className="chart-ath-date">({allTimeHigh.date})</span>
-                </div>
-            )}
+            {allTimeHigh && (() => {
+                const profit = allTimeHigh.value - INITIAL_INVESTMENT
+                const profitRate = (profit / INITIAL_INVESTMENT) * 100
+                return (
+                    <div className="chart-ath">
+                        <div>역대 최고 평가금액: <strong>₩{allTimeHigh.value.toLocaleString()}</strong>
+                            <span className="chart-ath-date">({allTimeHigh.date})</span>
+                        </div>
+                        <div className={`chart-ath-profit ${profit >= 0 ? 'positive' : 'negative'}`}>
+                            {profit >= 0 ? '+' : ''}₩{profit.toLocaleString()} ({profitRate >= 0 ? '+' : ''}{profitRate.toFixed(2)}%)
+                        </div>
+                    </div>
+                )
+            })()}
         </div>
     )
 }
