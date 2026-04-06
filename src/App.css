@@ -466,6 +466,38 @@ button:disabled {
   color: white;
 }
 
+/* 기간 필터 버튼 */
+.chart-filter-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.chart-filter-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  background: white;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chart-filter-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.chart-filter-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
 /* 시장별 요약 */
 .market-summary {
   margin-top: 20px;

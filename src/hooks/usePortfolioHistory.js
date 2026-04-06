@@ -1,8 +1,15 @@
 import { useState, useEffect } from 'react'
 import { STOCK_LIST } from '../data/stocks'
 
-const fetchHistory = async (ticker) => {
-    const response = await fetch(`/api/stock/history/${ticker}?range=1y&interval=1d`)
+const INTERVAL_MAP = {
+    '1y': '1d',
+    '1mo': '1d',
+    '5d': '1d'
+}
+
+const fetchHistory = async (ticker, range = '1y') => {
+    const interval = INTERVAL_MAP[range] || '1d'
+    const response = await fetch(`/api/stock/history/${ticker}?range=${range}&interval=${interval}`)
     const data = await response.json()
     const result = data.chart.result[0]
     const timestamps = result.timestamp
@@ -14,7 +21,7 @@ const fetchHistory = async (ticker) => {
     })).filter(d => d.close !== null && d.close !== undefined)
 }
 
-export const usePortfolioHistory = () => {
+export const usePortfolioHistory = (range = '1y') => {
     const [data, setData] = useState([])
     const [allTimeHigh, setAllTimeHigh] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -28,12 +35,12 @@ export const usePortfolioHistory = () => {
             try {
                 // 환율 + 모든 종목 히스토리 병렬 요청
                 const [exchangeHistory, ...stockHistories] = await Promise.all([
-                    fetchHistory('KRW=X'),
+                    fetchHistory('KRW=X', range),
                     ...STOCK_LIST.map(stock => {
                         const ticker = stock.market === 'KR'
                             ? `${stock.symbol}.${stock.type}`
                             : stock.symbol
-                        return fetchHistory(ticker)
+                        return fetchHistory(ticker, range)
                     })
                 ])
 
@@ -124,7 +131,7 @@ export const usePortfolioHistory = () => {
         }
 
         load()
-    }, [])
+    }, [range])
 
     return { data, allTimeHigh, loading, error }
 }

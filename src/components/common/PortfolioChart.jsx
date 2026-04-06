@@ -31,8 +31,14 @@ const CustomTooltip = ({ active, payload, label }) => {
     )
 }
 
-export const PortfolioChart = () => {
-    const { data, allTimeHigh, loading, error } = usePortfolioHistory()
+const RANGE_LABEL = {
+    '1y': '최근 1년',
+    '1mo': '최근 1달',
+    '5d': '최근 1주일'
+}
+
+export const PortfolioChart = ({ range = '1y' }) => {
+    const { data, allTimeHigh, loading, error } = usePortfolioHistory(range)
 
     if (loading) {
         return (
@@ -52,7 +58,7 @@ export const PortfolioChart = () => {
 
     return (
         <div className="chart-container">
-            <h2 className="chart-title">포트폴리오 평가금액 (최근 1년)</h2>
+            <h2 className="chart-title">포트폴리오 평가금액 ({RANGE_LABEL[range] || '최근 1년'})</h2>
             <ResponsiveContainer width="100%" height={260}>
                 <AreaChart data={data} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
                     <defs>

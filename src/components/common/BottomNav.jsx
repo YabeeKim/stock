@@ -1,10 +1,17 @@
 import {NavLink} from 'react-router-dom'
 
-const ChartIcon = ({filled}) => (
+const PortfolioIcon = ({filled}) => (
     <svg width="28" height="28" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
         <rect x="3" y="12" width="4" height="9" rx="1" />
         <rect x="10" y="8" width="4" height="13" rx="1" />
         <rect x="17" y="3" width="4" height="18" rx="1" />
+    </svg>
+)
+
+const ChartLineIcon = ({filled}) => (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" strokeLinejoin="round" strokeLinecap="round"
+                  fill={filled ? "none" : "none"} strokeOpacity={filled ? 1 : 0.6} />
     </svg>
 )
 
@@ -26,7 +33,17 @@ export const BottomNav = () => {
             >
                 {({isActive}) => (
                     <span className="nav-icon">
-                        <ChartIcon filled={isActive} />
+                        <PortfolioIcon filled={isActive} />
+                    </span>
+                )}
+            </NavLink>
+            <NavLink
+                to="/chart"
+                className={({isActive}) => isActive ? 'active' : ''}
+            >
+                {({isActive}) => (
+                    <span className="nav-icon">
+                        <ChartLineIcon filled={isActive} />
                     </span>
                 )}
             </NavLink>
