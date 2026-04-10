@@ -56,9 +56,23 @@ export const PortfolioChart = ({ range = '1y' }) => {
         )
     }
 
+    const currentValue = data.length ? data[data.length - 1].value : null
+    const profit = currentValue !== null ? currentValue - INITIAL_INVESTMENT : null
+    const profitRate = profit !== null ? (profit / INITIAL_INVESTMENT) * 100 : null
+
     return (
         <div className="chart-container">
             <h2 className="chart-title">포트폴리오 평가금액 ({RANGE_LABEL[range] || '최근 1년'})</h2>
+            {currentValue !== null && (
+                <div className="chart-current-value">
+                    <div className="chart-current-amount">₩{currentValue.toLocaleString()}</div>
+                    <div className={`chart-current-diff ${profit >= 0 ? 'positive' : 'negative'}`}>
+                        원금(₩{INITIAL_INVESTMENT.toLocaleString()}) 대비&nbsp;
+                        {profit >= 0 ? '+' : ''}₩{profit.toLocaleString()}
+                        &nbsp;({profitRate >= 0 ? '+' : ''}{profitRate.toFixed(2)}%)
+                    </div>
+                </div>
+            )}
             <ResponsiveContainer width="100%" height={260}>
                 <AreaChart data={data} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
                     <defs>

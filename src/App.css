@@ -448,6 +448,29 @@ button:disabled {
   font-weight: 600;
 }
 
+/* 현재 평가금액 요약 */
+.chart-current-value {
+  background: #f8faff;
+  border: 1px solid #e0eaff;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.chart-current-amount {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.5px;
+}
+
+.chart-current-diff {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .chart-tooltip {
   background: #1f2937;
   border-radius: 8px;
