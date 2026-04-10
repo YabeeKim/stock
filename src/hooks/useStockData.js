@@ -1,5 +1,8 @@
 import {useState, useEffect, useCallback} from 'react'
 import {STOCK_LIST} from '../data/stocks'
+import {getDummyStocks, DUMMY_EXCHANGE_RATE} from '../data/dummy'
+
+const IS_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 // 주가 조회 함수
 const fetchStockPrice = async (symbol, market, type) => {
@@ -53,6 +56,15 @@ export const useStockData = () => {
     const loadStockPrices = useCallback(async () => {
         setLoading(true)
         setError('')
+
+        if (IS_MOCK) {
+            const mockStocks = getDummyStocks()
+            setExchangeRate(DUMMY_EXCHANGE_RATE)
+            setStocks(mockStocks)
+            setLastUpdated(new Date())
+            setLoading(false)
+            return
+        }
 
         try {
             const [rate, ...stocksWithPrices] = await Promise.all([

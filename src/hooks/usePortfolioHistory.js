@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import { STOCK_LIST } from '../data/stocks'
+import { getDummyPortfolioHistory } from '../data/dummy'
+
+const IS_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 const INTERVAL_MAP = {
     '1y': '1d',
@@ -31,6 +34,14 @@ export const usePortfolioHistory = (range = '1y') => {
         const load = async () => {
             setLoading(true)
             setError(null)
+
+            if (IS_MOCK) {
+                const { data, allTimeHigh } = getDummyPortfolioHistory(range)
+                setData(data)
+                setAllTimeHigh(allTimeHigh)
+                setLoading(false)
+                return
+            }
 
             try {
                 // 환율 + 모든 종목 히스토리 병렬 요청
