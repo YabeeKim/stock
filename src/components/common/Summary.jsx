@@ -1,4 +1,4 @@
-import {INITIAL_INVESTMENT} from '../../data/stocks'
+import {INITIAL_INVESTMENT, AVAILABLE_CASH} from '../../data/stocks'
 
 export const Summary = ({krwTotal, usdTotal, exchangeRate}) => {
     return (
@@ -7,9 +7,12 @@ export const Summary = ({krwTotal, usdTotal, exchangeRate}) => {
             {usdTotal > 0 && exchangeRate > 0 && (
                 <div>🇺🇸 ₩{Math.round(usdTotal * exchangeRate).toLocaleString()}</div>
             )}
+            <div>예수금: ₩{AVAILABLE_CASH.toLocaleString()}</div>
             {exchangeRate > 0 && (() => {
-                const totalValue = krwTotal + (usdTotal * exchangeRate)
-                const profit = totalValue - INITIAL_INVESTMENT
+                const stockValue = krwTotal + (usdTotal * exchangeRate)
+                const totalValue = stockValue + AVAILABLE_CASH
+                const totalInvestment = INITIAL_INVESTMENT + AVAILABLE_CASH
+                const profit = stockValue - INITIAL_INVESTMENT
                 const profitRate = (profit / INITIAL_INVESTMENT) * 100
 
                 return (
@@ -17,8 +20,8 @@ export const Summary = ({krwTotal, usdTotal, exchangeRate}) => {
                         <div className="mt-2.5 pt-2.5 border-t-2 border-gray-800 text-base">
                             원금: ₩{INITIAL_INVESTMENT.toLocaleString()}
                         </div>
-                        <div className="mt-2  text-base">
-                            전체 총 금액:
+                        <div className="mt-2 text-base">
+                            전체 총 금액 (예수금 포함):
                             ₩{totalValue.toLocaleString(undefined, {maximumFractionDigits: 0})}
                         </div>
                         <div

@@ -8,6 +8,7 @@ export const DUMMY_PRICES = {
     '107640.KQ': { price: 15000,   previousClose: 14900,  currency: 'KRW' }, // 한중엔시에스
     '178320.KQ': { price: 20000,   previousClose: 20200,  currency: 'KRW' }, // 서진시스템
     '086520.KQ': { price: 80000,   previousClose: 82000,  currency: 'KRW' }, // 에코프로
+    '294870.KS': { price: 65800,  previousClose: 65200,  currency: 'KRW' }, // LG CNS
     'TSLA':      { price: 250,     previousClose: 248,    currency: 'USD' }, // 테슬라
 }
 
