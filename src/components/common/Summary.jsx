@@ -1,4 +1,4 @@
-import {INITIAL_INVESTMENT, AVAILABLE_CASH} from '../../data/stocks'
+import {INITIAL_INVESTMENT} from '../../data/stocks'
 
 export const Summary = ({krwTotal, usdTotal, exchangeRate}) => {
     return (
@@ -7,11 +7,9 @@ export const Summary = ({krwTotal, usdTotal, exchangeRate}) => {
             {usdTotal > 0 && exchangeRate > 0 && (
                 <div>🇺🇸 ₩{Math.round(usdTotal * exchangeRate).toLocaleString()}</div>
             )}
-            <div>예수금: ₩{AVAILABLE_CASH.toLocaleString()}</div>
             {exchangeRate > 0 && (() => {
                 const stockValue = krwTotal + (usdTotal * exchangeRate)
-                const totalValue = stockValue + AVAILABLE_CASH
-                const totalInvestment = INITIAL_INVESTMENT + AVAILABLE_CASH
+                const totalValue = stockValue
                 const profit = stockValue - INITIAL_INVESTMENT
                 const profitRate = (profit / INITIAL_INVESTMENT) * 100
 
