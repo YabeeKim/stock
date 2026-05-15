@@ -1,12 +1,11 @@
 // 원금 (나중에 DB/API로 대체 예정)
-export const SAMSUNG_INVESTMENT = 30_000_000
+export const SAMSUNG_INVESTMENT = 28_425_000
 export const TESLA_INVESTMENT = 20_000_000
 export const SDI_INVESTMENT = 53_500_000
 export const HANJUNG_INVESTMENT = 1_000_000
 export const SEOJIN_INVESTMENT = 1_000_000
 export const ECOPRO_INVESTMENT = 2_000_000
 export const ISU_INVESTMENT = 15_229_200 + (24 * 127_600)
-export const LGCNS_INVESTMENT = 30_870_500
 
 export const INITIAL_INVESTMENT = SDI_INVESTMENT + SAMSUNG_INVESTMENT + TESLA_INVESTMENT + HANJUNG_INVESTMENT + SEOJIN_INVESTMENT + ECOPRO_INVESTMENT + ISU_INVESTMENT + LGCNS_INVESTMENT
 
@@ -18,7 +17,6 @@ export const STOCK_LIST = [
     {name: '한중엔시에스', symbol: '107640', quantity: 21, market: 'KR', type: 'KQ', base: HANJUNG_INVESTMENT},
     {name: '서진시스템', symbol: '178320', quantity: 30, market: 'KR', type: 'KQ', base: SEOJIN_INVESTMENT},
     {name: '에코프로', symbol: '086520', quantity: 12, market: 'KR', type: 'KQ', base: ECOPRO_INVESTMENT},
-    {name: 'LG CNS', symbol: '064400', quantity: 461, market: 'KR', type: 'KS', base: LGCNS_INVESTMENT},
     {name: '테슬라', symbol: 'TSLA', quantity: 46, market: 'US', type: 'NASDAQ', base: TESLA_INVESTMENT}
 ]
 
