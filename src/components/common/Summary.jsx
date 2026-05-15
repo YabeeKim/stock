@@ -1,4 +1,4 @@
-import {INITIAL_INVESTMENT} from '../../data/stocks'
+import {INITIAL_INVESTMENT, CASH} from '../../data/stocks'
 
 export const Summary = ({krwTotal, usdTotal, exchangeRate}) => {
     return (
@@ -9,13 +9,16 @@ export const Summary = ({krwTotal, usdTotal, exchangeRate}) => {
             )}
             {exchangeRate > 0 && (() => {
                 const stockValue = krwTotal + (usdTotal * exchangeRate)
-                const totalValue = stockValue
-                const profit = stockValue - INITIAL_INVESTMENT
+                const totalValue = stockValue + CASH
+                const profit = totalValue - INITIAL_INVESTMENT
                 const profitRate = (profit / INITIAL_INVESTMENT) * 100
 
                 return (
                     <>
                         <div className="mt-2.5 pt-2.5 border-t-2 border-gray-800 text-base">
+                            예수금: ₩{CASH.toLocaleString()}
+                        </div>
+                        <div className="mt-2 text-base">
                             원금: ₩{INITIAL_INVESTMENT.toLocaleString()}
                         </div>
                         <div className="mt-2 text-base">
