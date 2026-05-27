@@ -38,6 +38,7 @@ export const aggregateBySymbol = (holdings) => {
                 ...existing,
                 quantity: totalQty,
                 avgPrice: totalCost / totalQty,
+                totalValue: existing.totalValue + h.totalValue,
                 brokers: [...existing.brokers, h.broker],
             })
         } else {

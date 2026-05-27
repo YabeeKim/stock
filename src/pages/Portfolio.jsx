@@ -66,7 +66,7 @@ export const Portfolio = () => {
                 })}
             </div>
 
-            {/* 증권사 필터 칩 */}
+            {/* 증권사 필터 - 데스크톱: 칩 버튼 */}
             <div className="broker-filter-buttons">
                 <button
                     className={`broker-filter-btn${activeBroker === 'all' ? ' active' : ''}`}
@@ -83,6 +83,20 @@ export const Portfolio = () => {
                         {broker.name}
                     </button>
                 ))}
+            </div>
+
+            {/* 증권사 필터 - 모바일: 드롭다운 */}
+            <div className="broker-filter-dropdown">
+                <select
+                    className="broker-filter-select"
+                    value={activeBroker}
+                    onChange={(e) => setActiveBroker(e.target.value)}
+                >
+                    <option value="all">전체</option>
+                    {BROKERS.map(broker => (
+                        <option key={broker.id} value={broker.id}>{broker.name}</option>
+                    ))}
+                </select>
             </div>
 
             {error && <div className="error text-center mb-5">{error}</div>}
