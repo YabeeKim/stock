@@ -1,28 +1,52 @@
-// 원금 (나중에 DB/API로 대체 예정)
-export const SAMSUNG_INVESTMENT = 28_425_000
-export const TESLA_INVESTMENT = 14_000_000
-export const SDI_INVESTMENT = 53_500_000
-export const HANJUNG_INVESTMENT = 1_000_000
-export const SEOJIN_INVESTMENT = 1_000_000
-export const ECOPRO_INVESTMENT = 2_000_000
-export const ISU_INVESTMENT = 15_229_200 + (24 * 127_600)
-
-export const CASH = 40_634_000
-
-export const INITIAL_INVESTMENT = SDI_INVESTMENT + SAMSUNG_INVESTMENT + TESLA_INVESTMENT + HANJUNG_INVESTMENT + SEOJIN_INVESTMENT + ECOPRO_INVESTMENT + ISU_INVESTMENT
-
-// 고정된 주식 목록 (나중에 DB/API로 대체 예정)
-export const STOCK_LIST = [
-    {name: '삼성전자', symbol: '005930', quantity: 375, market: 'KR', type: 'KS', base: SAMSUNG_INVESTMENT},
-    {name: '삼성SDI', symbol: '006400', quantity: 200, market: 'KR', type: 'KS', base: SDI_INVESTMENT},
-    {name: '이수스페셜티케미컬', symbol: '457190', quantity: 176, market: 'KR', type: 'KS', base: ISU_INVESTMENT},
-    {name: '한중엔시에스', symbol: '107640', quantity: 21, market: 'KR', type: 'KQ', base: HANJUNG_INVESTMENT},
-    {name: '서진시스템', symbol: '178320', quantity: 30, market: 'KR', type: 'KQ', base: SEOJIN_INVESTMENT},
-    {name: '에코프로', symbol: '086520', quantity: 12, market: 'KR', type: 'KQ', base: ECOPRO_INVESTMENT},
-    {name: '테슬라', symbol: 'TSLA', quantity: 46, market: 'US', type: 'NASDAQ', base: TESLA_INVESTMENT}
+export const BROKERS = [
+    { id: 'kis',          name: '한국투자증권' },
+    { id: 'namuh',        name: '나무증권' },
+    { id: 'namuh-ria',    name: '나무증권-RIA' },
+    { id: 'father-namuh', name: '아버지 나무증권' },
+    { id: 'overseas',     name: '해외계좌' },
 ]
 
-// 네이버 증권 링크 생성
+// avgPrice: KR종목은 원화 단가, US종목은 달러 단가
+export const HOLDINGS = [
+    { broker: 'kis',          name: '삼성SDI',             symbol: '006400', market: 'KR', type: 'KS', quantity: 145, avgPrice: 250_502 },
+    { broker: 'namuh',        name: '삼성전자',             symbol: '005930', market: 'KR', type: 'KS', quantity: 375, avgPrice: 75_800 },
+    { broker: 'namuh-ria',    name: '삼성전자',             symbol: '005930', market: 'KR', type: 'KS', quantity: 74,  avgPrice: 273_500 },
+    { broker: 'namuh-ria',    name: '삼성SDI',             symbol: '006400', market: 'KR', type: 'KS', quantity: 48,  avgPrice: 588_625 },
+    { broker: 'namuh-ria',    name: '이수스페셜티케미컬',   symbol: '457190', market: 'KR', type: 'KS', quantity: 86,  avgPrice: 119_669 },
+    { broker: 'father-namuh', name: '삼성SDI',             symbol: '006400', market: 'KR', type: 'KS', quantity: 40,  avgPrice: 326_581 },
+    { broker: 'father-namuh', name: '엘앤에프',            symbol: '066970', market: 'KR', type: 'KS', quantity: 9,   avgPrice: 158_488 },
+    { broker: 'father-namuh', name: '에코프로',            symbol: '086520', market: 'KR', type: 'KQ', quantity: 12,  avgPrice: 166_700 },
+    { broker: 'father-namuh', name: '한중엔시에스',         symbol: '107640', market: 'KR', type: 'KQ', quantity: 21,  avgPrice: 48_900 },
+    { broker: 'father-namuh', name: '서진시스템',           symbol: '178320', market: 'KR', type: 'KQ', quantity: 30,  avgPrice: 33_200 },
+    { broker: 'father-namuh', name: '에코프로머티',         symbol: '450080', market: 'KR', type: 'KS', quantity: 23,  avgPrice: 63_600 },
+    { broker: 'father-namuh', name: '이수스페셜티케미컬',   symbol: '457190', market: 'KR', type: 'KS', quantity: 90,  avgPrice: 89_038 },
+    { broker: 'overseas',     name: '테슬라',              symbol: 'TSLA',   market: 'US', type: 'NASDAQ', quantity: 46, avgPrice: 220.55 },
+]
+
+export const filterByBroker = (holdings, brokerId) =>
+    brokerId === 'all' ? holdings : holdings.filter(h => h.broker === brokerId)
+
+// 전체 보기 시 같은 symbol을 수량 합산, 매입가 가중평균으로 묶음
+export const aggregateBySymbol = (holdings) => {
+    const map = new Map()
+    for (const h of holdings) {
+        if (map.has(h.symbol)) {
+            const existing = map.get(h.symbol)
+            const totalCost = existing.avgPrice * existing.quantity + h.avgPrice * h.quantity
+            const totalQty = existing.quantity + h.quantity
+            map.set(h.symbol, {
+                ...existing,
+                quantity: totalQty,
+                avgPrice: totalCost / totalQty,
+                brokers: [...existing.brokers, h.broker],
+            })
+        } else {
+            map.set(h.symbol, { ...h, brokers: [h.broker] })
+        }
+    }
+    return [...map.values()]
+}
+
 export const getNaverLink = (stock) => {
     if (stock.market === 'US') {
         return `https://m.stock.naver.com/worldstock/stock/${stock.symbol}.O/total`

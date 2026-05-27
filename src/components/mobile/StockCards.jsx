@@ -9,12 +9,17 @@ export const StockCards = ({stocks, exchangeRate, showPercentage, onTogglePercen
                 const evalValue = stock.currency === 'KRW'
                     ? stock.totalValue
                     : stock.totalValue * exchangeRate
-                const profitRate = ((evalValue - stock.base) / stock.base) * 100
-                const isTesla = stock.market === 'US'
+                const investedValue = stock.currency === 'KRW'
+                    ? stock.avgPrice * stock.quantity
+                    : stock.avgPrice * stock.quantity * exchangeRate
+                const profitRate = investedValue > 0
+                    ? ((evalValue - investedValue) / investedValue) * 100
+                    : 0
+                const isForeign = stock.market === 'US'
 
                 return (
                     <div
-                        key={stock.id}
+                        key={stock.id ?? stock.symbol}
                         className="stock-card"
                         onClick={() => window.open(getNaverLink(stock), '_blank')}
                     >
@@ -43,19 +48,23 @@ export const StockCards = ({stocks, exchangeRate, showPercentage, onTogglePercen
                                 const priceText = stock.currency === 'KRW'
                                     ? `현재가 ${stock.currentPrice.toLocaleString()}`
                                     : `현재가 $${stock.currentPrice.toFixed(2)}`
-
                                 const changeText = showPercentage
                                     ? `(${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`
                                     : stock.currency === 'KRW'
                                         ? `(${priceChange >= 0 ? '+' : ''}${priceChange.toLocaleString()})`
                                         : `(${priceChange >= 0 ? '+' : ''}$${priceChange.toFixed(2)})`
-
                                 const priceClass = priceChange > 0 ? 'positive' : priceChange < 0 ? 'negative' : ''
                                 return <span className={priceClass}>{priceText} {changeText}</span>
                             })()}
                         </div>
                         <div className="card-row-3">
-                            원금 ₩{stock.base.toLocaleString()}
+                            <span>
+                                매입{' '}
+                                {stock.currency === 'KRW'
+                                    ? `₩${Math.round(stock.avgPrice).toLocaleString()}`
+                                    : `$${stock.avgPrice.toFixed(2)}`}
+                            </span>
+                            <span>투자 ₩{Math.round(investedValue).toLocaleString()}</span>
                         </div>
                         <div className="card-row-4">
                             {stock.error ? (
@@ -68,7 +77,7 @@ export const StockCards = ({stocks, exchangeRate, showPercentage, onTogglePercen
                                 <span className="loading">평가 -</span>
                             )}
                         </div>
-                        {isTesla && exchangeRate > 0 && (
+                        {isForeign && exchangeRate > 0 && (
                             <div className="card-row-5">
                                 환율 $1 = ₩{exchangeRate.toLocaleString(undefined, {
                                 minimumFractionDigits: 2,

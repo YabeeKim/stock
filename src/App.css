@@ -270,6 +270,9 @@ button:disabled {
 
 .card-row-3 {
   color: #666;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .card-row-4 {
@@ -516,6 +519,39 @@ button:disabled {
 }
 
 .chart-filter-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+/* 증권사 필터 버튼 */
+.broker-filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.broker-filter-btn {
+  padding: 8px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  background: white;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.broker-filter-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.broker-filter-btn.active {
   background: #3b82f6;
   border-color: #3b82f6;
   color: white;

@@ -9,15 +9,20 @@ import {
     ReferenceDot
 } from 'recharts'
 import { usePortfolioHistory } from '../../hooks/usePortfolioHistory'
-import { INITIAL_INVESTMENT } from '../../data/stocks'
+import { HOLDINGS } from '../../data/stocks'
+
+// 전체 보유 종목 기준 총 투자금액 (KRW 환산, 환율 1380 기준)
+const CHART_EXCHANGE_RATE = 1380
+const TOTAL_INVESTED = HOLDINGS.reduce((sum, h) => {
+    const cost = h.market === 'KR'
+        ? h.avgPrice * h.quantity
+        : h.avgPrice * h.quantity * CHART_EXCHANGE_RATE
+    return sum + cost
+}, 0)
 
 const formatValue = (value) => {
-    if (value >= 100_000_000) {
-        return `${(value / 100_000_000).toFixed(1)}억`
-    }
-    if (value >= 10_000) {
-        return `${(value / 10_000).toFixed(0)}만`
-    }
+    if (value >= 100_000_000) return `${(value / 100_000_000).toFixed(1)}억`
+    if (value >= 10_000) return `${(value / 10_000).toFixed(0)}만`
     return value.toLocaleString()
 }
 
@@ -57,8 +62,8 @@ export const PortfolioChart = ({ range = '1y' }) => {
     }
 
     const currentValue = data.length ? data[data.length - 1].value : null
-    const profit = currentValue !== null ? currentValue - INITIAL_INVESTMENT : null
-    const profitRate = profit !== null ? (profit / INITIAL_INVESTMENT) * 100 : null
+    const profit = currentValue !== null ? currentValue - TOTAL_INVESTED : null
+    const profitRate = profit !== null ? (profit / TOTAL_INVESTED) * 100 : null
 
     return (
         <div className="chart-container">
@@ -67,8 +72,8 @@ export const PortfolioChart = ({ range = '1y' }) => {
                 <div className="chart-current-value">
                     <div className="chart-current-amount">₩{currentValue.toLocaleString()}</div>
                     <div className={`chart-current-diff ${profit >= 0 ? 'positive' : 'negative'}`}>
-                        원금(₩{INITIAL_INVESTMENT.toLocaleString()}) 대비&nbsp;
-                        {profit >= 0 ? '+' : ''}₩{profit.toLocaleString()}
+                        투자금액(₩{Math.round(TOTAL_INVESTED).toLocaleString()}) 대비&nbsp;
+                        {profit >= 0 ? '+' : ''}₩{Math.round(profit).toLocaleString()}
                         &nbsp;({profitRate >= 0 ? '+' : ''}{profitRate.toFixed(2)}%)
                     </div>
                 </div>
@@ -122,15 +127,15 @@ export const PortfolioChart = ({ range = '1y' }) => {
                 </AreaChart>
             </ResponsiveContainer>
             {allTimeHigh && (() => {
-                const profit = allTimeHigh.value - INITIAL_INVESTMENT
-                const profitRate = (profit / INITIAL_INVESTMENT) * 100
+                const athProfit = allTimeHigh.value - TOTAL_INVESTED
+                const athProfitRate = (athProfit / TOTAL_INVESTED) * 100
                 return (
                     <div className="chart-ath">
                         <div>역대 최고 평가금액: <strong>₩{allTimeHigh.value.toLocaleString()}</strong>
                             <span className="chart-ath-date">({allTimeHigh.date})</span>
                         </div>
-                        <div className={`chart-ath-profit ${profit >= 0 ? 'positive' : 'negative'}`}>
-                            {profit >= 0 ? '+' : ''}₩{profit.toLocaleString()} ({profitRate >= 0 ? '+' : ''}{profitRate.toFixed(2)}%)
+                        <div className={`chart-ath-profit ${athProfit >= 0 ? 'positive' : 'negative'}`}>
+                            {athProfit >= 0 ? '+' : ''}₩{Math.round(athProfit).toLocaleString()} ({athProfitRate >= 0 ? '+' : ''}{athProfitRate.toFixed(2)}%)
                         </div>
                     </div>
                 )

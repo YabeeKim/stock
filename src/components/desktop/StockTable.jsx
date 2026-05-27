@@ -7,9 +7,11 @@ export const StockTable = ({stocks, exchangeRate, showPercentage, onTogglePercen
                 <thead>
                 <tr>
                     <th>종목</th>
+                    <th>수량</th>
+                    <th>매입가</th>
+                    <th>투자금액</th>
                     <th>현재가</th>
                     <th>등락</th>
-                    <th>원금</th>
                     <th>평가금액</th>
                     <th>수익률</th>
                 </tr>
@@ -21,15 +23,27 @@ export const StockTable = ({stocks, exchangeRate, showPercentage, onTogglePercen
                     const evalValue = stock.currency === 'KRW'
                         ? stock.totalValue
                         : stock.totalValue * exchangeRate
-                    const profitRate = ((evalValue - stock.base) / stock.base) * 100
+                    const investedValue = stock.currency === 'KRW'
+                        ? stock.avgPrice * stock.quantity
+                        : stock.avgPrice * stock.quantity * exchangeRate
+                    const profitRate = investedValue > 0
+                        ? ((evalValue - investedValue) / investedValue) * 100
+                        : 0
 
                     return (
                         <tr
-                            key={stock.id}
+                            key={stock.id ?? stock.symbol}
                             className="table-row-link"
                             onClick={() => window.open(getNaverLink(stock), '_blank')}
                         >
-                            <td>{stock.name} {stock.quantity.toLocaleString()}주</td>
+                            <td>{stock.name}</td>
+                            <td>{stock.quantity.toLocaleString()}주</td>
+                            <td>
+                                {stock.currency === 'KRW'
+                                    ? `₩${Math.round(stock.avgPrice).toLocaleString()}`
+                                    : `$${stock.avgPrice.toFixed(2)}`}
+                            </td>
+                            <td>₩{Math.round(investedValue).toLocaleString()}</td>
                             <td>
                                 {stock.error ? '-' : stock.currency === 'KRW'
                                     ? `₩${stock.currentPrice.toLocaleString()}`
@@ -42,7 +56,6 @@ export const StockTable = ({stocks, exchangeRate, showPercentage, onTogglePercen
                                         ? `${priceChange >= 0 ? '+' : ''}${priceChange.toLocaleString()}`
                                         : `${priceChange >= 0 ? '+' : ''}$${priceChange.toFixed(2)}`}
                             </td>
-                            <td>₩{stock.base.toLocaleString()}</td>
                             <td>
                                 {stock.error ? '-' : `₩${Math.round(evalValue).toLocaleString()}`}
                             </td>

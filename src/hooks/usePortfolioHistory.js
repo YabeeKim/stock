@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { STOCK_LIST } from '../data/stocks'
+import { HOLDINGS } from '../data/stocks'
 import { getDummyPortfolioHistory } from '../data/dummy'
 
 const IS_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
@@ -44,65 +44,67 @@ export const usePortfolioHistory = (range = '1y') => {
             }
 
             try {
-                // 환율 + 모든 종목 히스토리 병렬 요청
+                // symbol 기준 dedup — 같은 종목의 히스토리는 1회만 fetch
+                const uniqueHoldings = [...new Map(HOLDINGS.map(h => [h.symbol, h])).values()]
+
                 const [exchangeHistory, ...stockHistories] = await Promise.all([
                     fetchHistory('KRW=X', range),
-                    ...STOCK_LIST.map(stock => {
-                        const ticker = stock.market === 'KR'
-                            ? `${stock.symbol}.${stock.type}`
-                            : stock.symbol
+                    ...uniqueHoldings.map(h => {
+                        const ticker = h.market === 'KR' ? `${h.symbol}.${h.type}` : h.symbol
                         return fetchHistory(ticker, range)
                     })
                 ])
 
-                // 환율 날짜 맵 생성
                 const exchangeMap = {}
                 exchangeHistory.forEach(({ date, close }) => {
                     exchangeMap[date] = close
                 })
 
-                // 각 종목별 날짜 맵 생성
-                const stockMaps = stockHistories.map(history => {
+                // symbol → 날짜맵
+                const symbolToMap = {}
+                uniqueHoldings.forEach((h, i) => {
                     const map = {}
-                    history.forEach(({ date, close }) => {
-                        map[date] = close
-                    })
-                    return map
+                    stockHistories[i].forEach(({ date, close }) => { map[date] = close })
+                    symbolToMap[h.symbol] = map
                 })
 
-                // 한국 주식 날짜 기준으로 교집합 날짜 추출 (KR 시장 거래일 기준)
-                const krDates = new Set(
-                    stockHistories[0].map(d => d.date)
-                )
+                // 수량 집계: 같은 symbol이면 quantity 합산
+                const symbolQuantity = {}
+                const symbolMarket = {}
+                for (const h of HOLDINGS) {
+                    symbolQuantity[h.symbol] = (symbolQuantity[h.symbol] || 0) + h.quantity
+                    symbolMarket[h.symbol] = h.market
+                }
 
-                // 모든 종목의 데이터가 있는 날짜만 사용 (결측 시 직전 유효값으로 채움)
+                // KR 종목의 거래일 기준 날짜 추출
+                const krSymbol = uniqueHoldings.find(h => h.market === 'KR')?.symbol
+                const krDates = krSymbol
+                    ? new Set(Object.keys(symbolToMap[krSymbol]))
+                    : new Set()
+
                 const sortedDates = [...krDates].sort()
 
                 let lastExchangeRate = 1400
                 const portfolioData = []
 
                 for (const date of sortedDates) {
-                    // 환율: 해당일 또는 직전 유효값
-                    if (exchangeMap[date]) {
-                        lastExchangeRate = exchangeMap[date]
-                    }
+                    if (exchangeMap[date]) lastExchangeRate = exchangeMap[date]
 
                     let totalValue = 0
                     let hasAllData = true
 
-                    for (let i = 0; i < STOCK_LIST.length; i++) {
-                        const stock = STOCK_LIST[i]
-                        const close = stockMaps[i][date]
+                    for (const symbol of Object.keys(symbolQuantity)) {
+                        const market = symbolMarket[symbol]
+                        const priceMap = symbolToMap[symbol]
+                        const quantity = symbolQuantity[symbol]
+                        const close = priceMap[date]
 
                         if (close === undefined || close === null) {
-                            // US 주식은 거래일이 달라 결측 허용 - 직전 데이터 탐색
-                            if (stock.market === 'US') {
-                                // 직전 날짜에서 가장 최근 값 찾기
-                                const usDates = Object.keys(stockMaps[i]).sort()
+                            if (market === 'US') {
+                                const usDates = Object.keys(priceMap).sort()
                                 const prevDate = usDates.filter(d => d <= date).pop()
                                 if (prevDate) {
-                                    const prevClose = stockMaps[i][prevDate]
-                                    totalValue += prevClose * stock.quantity * lastExchangeRate
+                                    totalValue += priceMap[prevDate] * quantity * lastExchangeRate
                                 } else {
                                     hasAllData = false
                                     break
@@ -112,10 +114,10 @@ export const usePortfolioHistory = (range = '1y') => {
                                 break
                             }
                         } else {
-                            if (stock.market === 'KR') {
-                                totalValue += close * stock.quantity
+                            if (market === 'KR') {
+                                totalValue += close * quantity
                             } else {
-                                totalValue += close * stock.quantity * lastExchangeRate
+                                totalValue += close * quantity * lastExchangeRate
                             }
                         }
                     }
@@ -125,7 +127,6 @@ export const usePortfolioHistory = (range = '1y') => {
                     }
                 }
 
-                // 최고가 계산
                 const maxEntry = portfolioData.reduce(
                     (max, d) => d.value > max.value ? d : max,
                     portfolioData[0]

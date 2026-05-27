@@ -1,38 +1,38 @@
-import {INITIAL_INVESTMENT, CASH} from '../../data/stocks'
+export const Summary = ({stocks, exchangeRate}) => {
+    const krwStocks = stocks.filter(s => s.currency === 'KRW')
+    const usdStocks = stocks.filter(s => s.currency === 'USD')
 
-export const Summary = ({krwTotal, usdTotal, exchangeRate}) => {
+    const krwEval = krwStocks.reduce((sum, s) => sum + s.totalValue, 0)
+    const usdEval = usdStocks.reduce((sum, s) => sum + s.totalValue, 0)
+    const totalEval = krwEval + usdEval * exchangeRate
+
+    const krwInvested = krwStocks.reduce((sum, s) => sum + s.avgPrice * s.quantity, 0)
+    const usdInvested = usdStocks.reduce((sum, s) => sum + s.avgPrice * s.quantity * exchangeRate, 0)
+    const totalInvested = krwInvested + usdInvested
+
+    const profit = totalEval - totalInvested
+    const profitRate = totalInvested > 0 ? (profit / totalInvested) * 100 : 0
+
     return (
         <div className="summary">
-            {krwTotal > 0 && <div>🇰🇷 ₩{krwTotal.toLocaleString()}</div>}
-            {usdTotal > 0 && exchangeRate > 0 && (
-                <div>🇺🇸 ₩{Math.round(usdTotal * exchangeRate).toLocaleString()}</div>
+            {krwEval > 0 && <div>🇰🇷 ₩{Math.round(krwEval).toLocaleString()}</div>}
+            {usdEval > 0 && exchangeRate > 0 && (
+                <div>🇺🇸 ₩{Math.round(usdEval * exchangeRate).toLocaleString()}</div>
             )}
-            {exchangeRate > 0 && (() => {
-                const stockValue = krwTotal + (usdTotal * exchangeRate)
-                const totalValue = stockValue + CASH
-                const profit = totalValue - INITIAL_INVESTMENT
-                const profitRate = (profit / INITIAL_INVESTMENT) * 100
-
-                return (
-                    <>
-                        <div className="mt-2.5 pt-2.5 border-t-2 border-gray-800 text-base">
-                            예수금: ₩{CASH.toLocaleString()}
-                        </div>
-                        <div className="mt-2 text-base">
-                            원금: ₩{INITIAL_INVESTMENT.toLocaleString()}
-                        </div>
-                        <div className="mt-2 text-base">
-                            전체 총 금액 (예수금 포함):
-                            ₩{totalValue.toLocaleString(undefined, {maximumFractionDigits: 0})}
-                        </div>
-                        <div
-                            className={`mt-2 text-lg ${profit >= 0 ? 'text-red-700' : 'text-blue-700'}`}>
-                            손익: ₩{profit.toLocaleString(undefined, {maximumFractionDigits: 0})}
-                            ({profitRate.toFixed(2)}%)
-                        </div>
-                    </>
-                )
-            })()}
+            {exchangeRate > 0 && (
+                <>
+                    <div className="mt-2.5 pt-2.5 border-t-2 border-gray-800 text-base">
+                        투자금액: ₩{Math.round(totalInvested).toLocaleString()}
+                    </div>
+                    <div className="mt-2 text-base">
+                        평가금액: ₩{Math.round(totalEval).toLocaleString()}
+                    </div>
+                    <div className={`mt-2 text-lg ${profit >= 0 ? 'text-red-700' : 'text-blue-700'}`}>
+                        손익: ₩{Math.round(profit).toLocaleString()}
+                        ({profit >= 0 ? '+' : ''}{profitRate.toFixed(2)}%)
+                    </div>
+                </>
+            )}
         </div>
     )
 }

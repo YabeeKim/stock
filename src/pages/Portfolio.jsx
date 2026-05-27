@@ -4,10 +4,12 @@ import {usePullToRefresh} from '../hooks/usePullToRefresh'
 import {StockTable} from '../components/desktop/StockTable'
 import {StockCards} from '../components/mobile/StockCards'
 import {Summary} from '../components/common/Summary'
+import {BROKERS, filterByBroker, aggregateBySymbol} from '../data/stocks'
 
 export const Portfolio = () => {
     const [currentTime, setCurrentTime] = useState(new Date())
     const [showPercentage, setShowPercentage] = useState(false)
+    const [activeBroker, setActiveBroker] = useState('all')
 
     const {
         stocks,
@@ -15,7 +17,6 @@ export const Portfolio = () => {
         error,
         exchangeRate,
         loadStockPrices,
-        getTotalValue
     } = useStockData()
 
     const {
@@ -28,19 +29,15 @@ export const Portfolio = () => {
         PULL_THRESHOLD
     } = usePullToRefresh(loadStockPrices)
 
-    // 현재 시간 업데이트
     useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(new Date())
-        }, 1000)
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000)
         return () => clearInterval(timer)
     }, [])
 
-    const {krwTotal, usdTotal} = getTotalValue()
+    const filtered = filterByBroker(stocks, activeBroker)
+    const displayStocks = activeBroker === 'all' ? aggregateBySymbol(filtered) : filtered
 
-    const handleTogglePercentage = () => {
-        setShowPercentage(!showPercentage)
-    }
+    const handleTogglePercentage = () => setShowPercentage(p => !p)
 
     return (
         <div
@@ -50,7 +47,6 @@ export const Portfolio = () => {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
         >
-            {/* Pull to refresh indicator */}
             <div
                 className="pull-indicator"
                 style={{
@@ -65,44 +61,55 @@ export const Portfolio = () => {
 
             <div className="current-time">
                 {currentTime.toLocaleString('ko-KR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
+                    year: 'numeric', month: 'long', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
                 })}
+            </div>
+
+            {/* 증권사 필터 칩 */}
+            <div className="broker-filter-buttons">
+                <button
+                    className={`broker-filter-btn${activeBroker === 'all' ? ' active' : ''}`}
+                    onClick={() => setActiveBroker('all')}
+                >
+                    전체
+                </button>
+                {BROKERS.map(broker => (
+                    <button
+                        key={broker.id}
+                        className={`broker-filter-btn${activeBroker === broker.id ? ' active' : ''}`}
+                        onClick={() => setActiveBroker(broker.id)}
+                    >
+                        {broker.name}
+                    </button>
+                ))}
             </div>
 
             {error && <div className="error text-center mb-5">{error}</div>}
 
             <div className="portfolio-section">
                 {loading && stocks.length === 0 ? (
-                    <div className="empty-state">
-                        주가 정보를 불러오는 중...
-                    </div>
+                    <div className="empty-state">주가 정보를 불러오는 중...</div>
                 ) : (
                     <>
                         <StockTable
-                            stocks={stocks}
+                            stocks={displayStocks}
                             exchangeRate={exchangeRate}
                             showPercentage={showPercentage}
                             onTogglePercentage={handleTogglePercentage}
                         />
 
                         <StockCards
-                            stocks={stocks}
+                            stocks={displayStocks}
                             exchangeRate={exchangeRate}
                             showPercentage={showPercentage}
                             onTogglePercentage={handleTogglePercentage}
                         />
 
                         <Summary
-                            krwTotal={krwTotal}
-                            usdTotal={usdTotal}
+                            stocks={displayStocks}
                             exchangeRate={exchangeRate}
                         />
-
                     </>
                 )}
             </div>
