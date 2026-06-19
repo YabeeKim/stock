@@ -14,6 +14,7 @@ export const HOLDINGS = [
     { broker: 'namuh-ria',    name: '삼성SDI',             symbol: '006400', market: 'KR', type: 'KS', quantity: 48,  avgPrice: 588_625 },
     { broker: 'namuh-ria',    name: '이수스페셜티케미컬',   symbol: '457190', market: 'KR', type: 'KS', quantity: 86,  avgPrice: 119_669 },
     { broker: 'father-namuh', name: '삼성SDI',             symbol: '006400', market: 'KR', type: 'KS', quantity: 40,  avgPrice: 326_581 },
+    { broker: 'father-namuh', name: '삼성전자',             symbol: '005930', market: 'KR', type: 'KS', quantity: 1, avgPrice: 365_800 },
     { broker: 'father-namuh', name: '엘앤에프',            symbol: '066970', market: 'KR', type: 'KS', quantity: 9,   avgPrice: 158_488 },
     { broker: 'father-namuh', name: '에코프로',            symbol: '086520', market: 'KR', type: 'KQ', quantity: 12,  avgPrice: 166_700 },
     { broker: 'father-namuh', name: '한중엔시에스',         symbol: '107640', market: 'KR', type: 'KQ', quantity: 21,  avgPrice: 48_900 },
